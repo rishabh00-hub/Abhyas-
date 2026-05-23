@@ -1,0 +1,6 @@
+{
+  "name": "Abhyas Study Planner",
+  "description": "A complete, highly-polished, offline-first target planner and study companion application with target tracking, pomodoro/stopwatch focus hub, backlog debt management, and detailed DPP accuracy charts.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

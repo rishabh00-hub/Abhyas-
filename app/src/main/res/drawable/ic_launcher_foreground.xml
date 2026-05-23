@@ -1,0 +1,27 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <!-- Stylized Back Cover (Provides beautiful deep indigo frame boundaries) -->
+    <path
+        android:pathData="M54,32 C36,22 18,27 18,27 L18,68 C36,63 54,73 54,73 C54,73 72,63 90,68 L90,27 C72,22 54,32 54,32 Z"
+        android:fillColor="#312E81" />
+
+    <!-- Left Page (Sleek minimalist white leaf curve) -->
+    <path
+        android:pathData="M52,35 C37,25 21,30 21,30 L21,65 C37,60 52,69 52,69 Z"
+        android:fillColor="#FFFFFF" />
+
+    <!-- Right Page (Sleek cream leaf curve to provide subtle dynamic volume symmetry) -->
+    <path
+        android:pathData="M56,35 C71,25 87,30 87,30 L87,65 C71,60 56,69 56,69 Z"
+        android:fillColor="#F1F5F9" />
+
+    <!-- Center Crease Spline (Ultra-thin styling accent) -->
+    <path
+        android:pathData="M53.5,35 L54.5,35 L54.5,70 L53.5,70 Z"
+        android:fillColor="#6366F1" />
+
+</vector>
