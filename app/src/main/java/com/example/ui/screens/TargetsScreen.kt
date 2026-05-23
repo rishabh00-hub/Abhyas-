@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -32,11 +33,13 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.DailyAspiration
 import com.example.data.DailyTarget
+import com.example.ui.AutoAddConfig
 import com.example.ui.StudyViewModel
 import com.example.ui.TargetTemplate
 import com.example.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,24 +58,39 @@ fun TargetsScreen(viewModel: StudyViewModel) {
     var selectedType by remember { mutableStateOf("Lecture") }
     var targetDateText by remember { mutableStateOf("") } // YYYY-MM-DD
     var questionsCount by remember { mutableStateOf("") } // optional DPP count
+    var dateError by remember { mutableStateOf<String?>(null) }
     
     // New customized fields
     var chapterText by remember { mutableStateOf("") }
     var lectureNumberText by remember { mutableStateOf("") }
     var batchText by remember { mutableStateOf("") }
+    var autoAddEnabled by remember { mutableStateOf(false) }
+    var autoAddMaxLecture by remember { mutableStateOf("") }
+    var autoAddEndDate by remember { mutableStateOf("") }
+    var autoAddError by remember { mutableStateOf<String?>(null) }
 
     // Dialog flags
     var showProfileEditDialog by remember { mutableStateOf(false) }
     var showAddPresetDialog by remember { mutableStateOf(false) }
+
+    val listState = rememberLazyListState()
+    val coroutineScope = rememberCoroutineScope()
+    val prescheduleIndex = 6
+    val scrollToPrescheduleForm = {
+        viewModel.isTargetFormExpanded = true
+        coroutineScope.launch {
+            listState.animateScrollToItem(prescheduleIndex)
+        }
+    }
 
     val subjectsList = listOf("Physics", "Chemistry", "Maths", "Biology", "General", "Other")
     val typesList = listOf("Lecture", "DPP", "Homework", "Backlog", "Revision", "Self Study", "Test")
 
     // Filter targets list based on tab
     val activeFilter = viewModel.targetDateFilter
-    val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+    val todayStr = viewModel.todayDate
 
-    val filteredTargets = remember(targets, activeFilter) {
+    val filteredTargets = remember(targets, activeFilter, todayStr) {
         targets.filter { target ->
             when (activeFilter) {
                 "today" -> target.targetDate == todayStr
@@ -114,13 +132,14 @@ fun TargetsScreen(viewModel: StudyViewModel) {
         }
         
         // Open the scheduling form automatically so the user immediately sees it filled
-        viewModel.isTargetFormExpanded = true
+        scrollToPrescheduleForm()
     }
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
             .padding(horizontal = 16.dp),
+        state = listState,
         verticalArrangement = Arrangement.spacedBy(16.dp),
         contentPadding = PaddingValues(bottom = 100.dp, top = 16.dp)
     ) {
@@ -252,7 +271,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
 
         // --- TODAY'S PROGRESS OVERVIEW TARGETS CARD ---
         item {
-            val todayTargets = remember(targets) { targets.filter { it.targetDate == todayStr } }
+            val todayTargets = remember(targets, todayStr) { targets.filter { it.targetDate == todayStr } }
             val totalToday = todayTargets.size
             val completedToday = todayTargets.count { it.status == "completed" }
             val todayPercent = if (totalToday > 0) (completedToday * 100) / totalToday else 0
@@ -384,7 +403,10 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier.clickable { scrollToPrescheduleForm() }
+                        ) {
                             Icon(
                                 imageVector = Icons.Default.OfflineBolt,
                                 contentDescription = "Presets",
@@ -761,17 +783,29 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                             ) {
                                 OutlinedTextField(
                                     value = targetDateText,
-                                    onValueChange = { targetDateText = it },
+                                    onValueChange = {
+                                        targetDateText = it
+                                        dateError = null
+                                    },
                                     label = { Text("Target Date (YYYY-MM-DD)", color = Color.Gray) },
                                     placeholder = { Text(todayStr, color = Color.DarkGray) },
                                     singleLine = true,
                                     modifier = Modifier.weight(1f),
+                                    isError = dateError != null,
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = CosmicSurfaceVariant,
                                         unfocusedContainerColor = CosmicSurfaceVariant,
                                         focusedTextColor = MaterialTheme.colorScheme.onSurface,
                                         unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                                     )
+                                )
+                            }
+
+                            if (dateError != null) {
+                                Text(
+                                    text = dateError ?: "",
+                                    color = MaterialTheme.colorScheme.error,
+                                    fontSize = 11.sp
                                 )
                             }
 
@@ -792,8 +826,157 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 )
                             }
 
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Column {
+                                    Text(
+                                        text = "Auto-add Next Targets",
+                                        fontSize = 12.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = MaterialTheme.colorScheme.onSurface
+                                    )
+                                    Text(
+                                        text = "Generate daily follow-up lectures automatically",
+                                        fontSize = 10.sp,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Switch(
+                                    checked = autoAddEnabled,
+                                    onCheckedChange = { enabled ->
+                                        autoAddEnabled = enabled
+                                        if (!enabled) {
+                                            autoAddMaxLecture = ""
+                                            autoAddEndDate = ""
+                                            autoAddError = null
+                                        }
+                                    }
+                                )
+                            }
+
+                            if (autoAddEnabled) {
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                ) {
+                                    OutlinedTextField(
+                                        value = autoAddMaxLecture,
+                                        onValueChange = {
+                                            autoAddMaxLecture = it
+                                            autoAddError = null
+                                        },
+                                        label = { Text("Max Lecture No.", color = Color.Gray, fontSize = 11.sp) },
+                                        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                                        singleLine = true,
+                                        modifier = Modifier.weight(1f),
+                                        colors = TextFieldDefaults.colors(
+                                            focusedContainerColor = CosmicSurfaceVariant,
+                                            unfocusedContainerColor = CosmicSurfaceVariant,
+                                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    )
+                                    OutlinedTextField(
+                                        value = autoAddEndDate,
+                                        onValueChange = {
+                                            autoAddEndDate = it
+                                            autoAddError = null
+                                        },
+                                        label = { Text("End Date (YYYY-MM-DD)", color = Color.Gray, fontSize = 11.sp) },
+                                        singleLine = true,
+                                        modifier = Modifier.weight(1f),
+                                        colors = TextFieldDefaults.colors(
+                                            focusedContainerColor = CosmicSurfaceVariant,
+                                            unfocusedContainerColor = CosmicSurfaceVariant,
+                                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
+                                        )
+                                    )
+                                }
+
+                                Text(
+                                    text = "Set a max lecture number or end date to stop auto-add.",
+                                    fontSize = 10.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+
+                                if (autoAddError != null) {
+                                    Text(
+                                        text = autoAddError ?: "",
+                                        color = MaterialTheme.colorScheme.error,
+                                        fontSize = 11.sp
+                                    )
+                                }
+                            }
+
                             Button(
                                 onClick = {
+                                    dateError = null
+                                    autoAddError = null
+                                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply {
+                                        isLenient = false
+                                    }
+                                    val normalizedDate = if (targetDateText.isBlank()) {
+                                        todayStr
+                                    } else {
+                                        try {
+                                            val parsed = dateFormat.parse(targetDateText.trim()) ?: throw IllegalArgumentException()
+                                            dateFormat.format(parsed)
+                                        } catch (e: Exception) {
+                                            dateError = "Enter a valid date (YYYY-MM-DD)."
+                                            return@Button
+                                        }
+                                    }
+
+                                    var autoConfig: AutoAddConfig? = null
+                                    if (autoAddEnabled) {
+                                        val maxLecture = autoAddMaxLecture.trim().takeIf { it.isNotEmpty() }?.toIntOrNull()
+                                        val normalizedEndDate = if (autoAddEndDate.isBlank()) {
+                                            null
+                                        } else {
+                                            try {
+                                                val parsed = dateFormat.parse(autoAddEndDate.trim()) ?: throw IllegalArgumentException()
+                                                dateFormat.format(parsed)
+                                            } catch (e: Exception) {
+                                                autoAddError = "Enter a valid end date (YYYY-MM-DD)."
+                                                return@Button
+                                            }
+                                        }
+
+                                        if (maxLecture == null && normalizedEndDate == null) {
+                                            autoAddError = "Set a max lecture number or an end date."
+                                            return@Button
+                                        }
+
+                                        val lectureDigits = "\\d+".toRegex().find(lectureNumberText)?.value?.toIntOrNull()
+                                        if (lectureDigits == null) {
+                                            autoAddError = "Provide a lecture number to auto-add."
+                                            return@Button
+                                        }
+
+                                        if (maxLecture != null && lectureDigits > maxLecture) {
+                                            autoAddError = "Max lecture must be >= current lecture."
+                                            return@Button
+                                        }
+
+                                        if (normalizedEndDate != null) {
+                                            val baseDate = dateFormat.parse(normalizedDate) ?: throw IllegalArgumentException()
+                                            val endDate = dateFormat.parse(normalizedEndDate) ?: throw IllegalArgumentException()
+                                            if (endDate.before(baseDate)) {
+                                                autoAddError = "End date must be on/after target date."
+                                                return@Button
+                                            }
+                                        }
+
+                                        autoConfig = AutoAddConfig(
+                                            maxLectureNumber = maxLecture,
+                                            endDate = normalizedEndDate
+                                        )
+                                    }
+
                                     val duration = durationMinutes.toIntOrNull() ?: 45
                                     val qCount = if (selectedType == "DPP") questionsCount.toIntOrNull() else null
                                     
@@ -811,12 +994,13 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                             title = finalTitle,
                                             subject = selectedSubject,
                                             type = selectedType,
-                                            targetDate = targetDateText.ifEmpty { todayStr },
+                                            targetDate = normalizedDate,
                                             durationProposed = duration,
                                             questionsCount = qCount,
                                             chapter = chapterText.ifEmpty { null },
                                             lectureNumber = lectureNumberText.ifEmpty { null },
-                                            batch = finalBatch
+                                            batch = finalBatch,
+                                            autoAddConfig = autoConfig
                                         )
 
                                         // Reset fields
@@ -825,6 +1009,10 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                         chapterText = ""
                                         lectureNumberText = ""
                                         batchText = ""
+                                        autoAddEnabled = false
+                                        autoAddMaxLecture = ""
+                                        autoAddEndDate = ""
+                                        autoAddError = null
                                         viewModel.isTargetFormExpanded = false
                                     }
                                 },
@@ -1296,6 +1484,8 @@ fun TargetCard(
     }
 
     var showManualMinsDialog by remember { mutableStateOf(false) }
+    var showDeleteConfirmDialog by remember { mutableStateOf(false) }
+    var showUncheckConfirmDialog by remember { mutableStateOf(false) }
     var inputMinsText by remember { mutableStateOf("") }
 
     val totalLoggedMin = target.durationLogged / 60
@@ -1433,7 +1623,13 @@ fun TargetCard(
                 }
 
                 IconButton(
-                    onClick = onToggleComplete,
+                    onClick = {
+                        if (isFullComplete) {
+                            showUncheckConfirmDialog = true
+                        } else {
+                            onToggleComplete()
+                        }
+                    },
                     modifier = Modifier.testTag("check_target_status_btn_${target.id}")
                 ) {
                     Icon(
@@ -1533,7 +1729,7 @@ fun TargetCard(
 
                     // Delete target
                     IconButton(
-                        onClick = onDelete,
+                        onClick = { showDeleteConfirmDialog = true },
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
@@ -1621,6 +1817,60 @@ fun TargetCard(
             },
             dismissButton = {
                 TextButton(onClick = { showManualMinsDialog = false }) {
+                    Text("Cancel", color = Color.Gray)
+                }
+            },
+            containerColor = CosmicSurface,
+            textContentColor = Color.LightGray,
+            titleContentColor = Color.White
+        )
+    }
+
+    if (showDeleteConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showDeleteConfirmDialog = false },
+            title = { Text("Delete target?", color = Color.White) },
+            text = { Text("This action will permanently delete the target.", color = Color.LightGray) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onDelete()
+                        showDeleteConfirmDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444))
+                ) {
+                    Text("Delete", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                    Text("Cancel", color = Color.Gray)
+                }
+            },
+            containerColor = CosmicSurface,
+            textContentColor = Color.LightGray,
+            titleContentColor = Color.White
+        )
+    }
+
+    if (showUncheckConfirmDialog) {
+        AlertDialog(
+            onDismissRequest = { showUncheckConfirmDialog = false },
+            title = { Text("Uncheck completed target?", color = Color.White) },
+            text = { Text("This will move the target back to pending status.", color = Color.LightGray) },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onToggleComplete()
+                        showUncheckConfirmDialog = false
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = CosmicAccentAlert)
+                ) {
+                    Text("Uncheck", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showUncheckConfirmDialog = false }) {
                     Text("Cancel", color = Color.Gray)
                 }
             },

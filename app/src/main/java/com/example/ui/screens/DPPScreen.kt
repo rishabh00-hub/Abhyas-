@@ -9,6 +9,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -36,6 +37,7 @@ import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.DPPHistoryLog
+import com.example.ui.DppPreset
 import com.example.ui.StudyViewModel
 import com.example.ui.theme.*
 import java.text.SimpleDateFormat
@@ -51,6 +53,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
     val dppLogs by viewModel.allDPPLogs.collectAsState()
 
     var showAddForm by remember { mutableStateOf(false) }
+    var showAddPresetDialog by remember { mutableStateOf(false) }
 
     // Intake Form States
     var title by remember { mutableStateOf("") }
@@ -62,6 +65,16 @@ fun DPPScreen(viewModel: StudyViewModel) {
     var notes by remember { mutableStateOf("") }
 
     val subjectsList = listOf("Physics", "Chemistry", "Maths", "Biology", "General")
+
+    val onSelectPreset = { preset: DppPreset ->
+        title = preset.title
+        selectedSubject = preset.subject
+        totalQuestions = preset.totalQuestions.toString()
+        attempted = preset.attempted.toString()
+        correct = preset.correct.toString()
+        durationMinutes = preset.durationMinutes.toString()
+        showAddForm = true
+    }
 
     // Sort chronologically (earliest to latest for drawing graph lines)
     val chronologicalLogs = remember(dppLogs) {
@@ -130,6 +143,121 @@ fun DPPScreen(viewModel: StudyViewModel) {
                     fontWeight = FontWeight.Black,
                     color = MaterialTheme.colorScheme.onBackground
                 )
+            }
+        }
+
+        // --- DPP PRESETS ---
+        item {
+            Card(
+                modifier = Modifier.fillMaxWidth(),
+                colors = CardDefaults.cardColors(containerColor = CosmicSurface),
+                border = BorderStroke(1.dp, CosmicBorder)
+            ) {
+                Column(modifier = Modifier.padding(12.dp)) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            Icon(
+                                imageVector = Icons.Outlined.Analytics,
+                                contentDescription = "DPP Presets",
+                                tint = CosmicSecondary,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "DPP PRESETS",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = CosmicSecondary,
+                                letterSpacing = 1.sp
+                            )
+                        }
+                        Text(
+                            text = "+ Add Preset",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = CosmicAccentCheck,
+                            modifier = Modifier
+                                .clickable { showAddPresetDialog = true }
+                                .padding(4.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(8.dp))
+
+                    if (viewModel.dppPresets.isEmpty()) {
+                        Text(
+                            text = "No DPP presets configured. Click '+ Add Preset' to create one.",
+                            fontSize = 11.sp,
+                            color = Color.Gray,
+                            modifier = Modifier.padding(vertical = 4.dp)
+                        )
+                    } else {
+                        LazyRow(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            items(viewModel.dppPresets, key = { it.id }) { preset ->
+                                val subColor = when (preset.subject) {
+                                    "Physics" -> ColorPhysics
+                                    "Chemistry" -> ColorChemistry
+                                    "Maths" -> ColorMaths
+                                    "Biology" -> ColorBiology
+                                    else -> ColorGeneral
+                                }
+
+                                Row(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(12.dp))
+                                        .background(CosmicSurfaceVariant)
+                                        .border(BorderStroke(1.dp, subColor.copy(alpha = 0.5f)), RoundedCornerShape(12.dp))
+                                        .clickable { onSelectPreset(preset) }
+                                        .padding(horizontal = 10.dp, vertical = 8.dp),
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .size(8.dp)
+                                            .clip(CircleShape)
+                                            .background(subColor)
+                                    )
+                                    Column {
+                                        Text(
+                                            text = preset.title,
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = MaterialTheme.colorScheme.onSurface,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                        Text(
+                                            text = "${preset.totalQuestions} Qs • ${preset.durationMinutes}m",
+                                            fontSize = 9.sp,
+                                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                            maxLines = 1,
+                                            overflow = TextOverflow.Ellipsis
+                                        )
+                                    }
+
+                                    Spacer(modifier = Modifier.width(2.dp))
+
+                                    Icon(
+                                        imageVector = Icons.Default.Close,
+                                        contentDescription = "Delete preset",
+                                        tint = Color.Gray,
+                                        modifier = Modifier
+                                            .size(14.dp)
+                                            .clickable { viewModel.deleteDppPreset(preset.id) }
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
 
@@ -782,6 +910,165 @@ fun DPPScreen(viewModel: StudyViewModel) {
                 )
             }
         }
+    }
+
+    if (showAddPresetDialog) {
+        var presetTitle by remember { mutableStateOf("") }
+        var presetSubject by remember { mutableStateOf(selectedSubject) }
+        var presetTotal by remember { mutableStateOf(totalQuestions) }
+        var presetAttempted by remember { mutableStateOf(attempted) }
+        var presetCorrect by remember { mutableStateOf(correct) }
+        var presetDuration by remember { mutableStateOf(durationMinutes) }
+        var subjectExpanded by remember { mutableStateOf(false) }
+
+        AlertDialog(
+            onDismissRequest = { showAddPresetDialog = false },
+            title = { Text("Create DPP Preset", color = Color.White) },
+            text = {
+                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                    OutlinedTextField(
+                        value = presetTitle,
+                        onValueChange = { presetTitle = it },
+                        label = { Text("Preset Title", color = Color.Gray) },
+                        singleLine = true,
+                        colors = TextFieldDefaults.colors(
+                            focusedContainerColor = CosmicSurfaceVariant,
+                            unfocusedContainerColor = CosmicSurfaceVariant,
+                            focusedTextColor = Color.White,
+                            unfocusedTextColor = Color.White
+                        )
+                    )
+
+                    Box {
+                        OutlinedButton(
+                            onClick = { subjectExpanded = true },
+                            modifier = Modifier.fillMaxWidth(),
+                            shape = RoundedCornerShape(8.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                            border = BorderStroke(1.dp, CosmicBorder)
+                        ) {
+                            Text("Subject: $presetSubject", fontSize = 12.sp)
+                        }
+                        DropdownMenu(
+                            expanded = subjectExpanded,
+                            onDismissRequest = { subjectExpanded = false },
+                            modifier = Modifier.background(CosmicSurfaceVariant)
+                        ) {
+                            subjectsList.forEach { sub ->
+                                DropdownMenuItem(
+                                    text = { Text(sub, color = Color.White) },
+                                    onClick = {
+                                        presetSubject = sub
+                                        subjectExpanded = false
+                                    }
+                                )
+                            }
+                        }
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = presetTotal,
+                            onValueChange = { presetTotal = it },
+                            label = { Text("Total Qs", color = Color.Gray) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = CosmicSurfaceVariant,
+                                unfocusedContainerColor = CosmicSurfaceVariant,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            )
+                        )
+                        OutlinedTextField(
+                            value = presetAttempted,
+                            onValueChange = { presetAttempted = it },
+                            label = { Text("Attempted", color = Color.Gray) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = CosmicSurfaceVariant,
+                                unfocusedContainerColor = CosmicSurfaceVariant,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            )
+                        )
+                    }
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                    ) {
+                        OutlinedTextField(
+                            value = presetCorrect,
+                            onValueChange = { presetCorrect = it },
+                            label = { Text("Correct", color = Color.Gray) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = CosmicSurfaceVariant,
+                                unfocusedContainerColor = CosmicSurfaceVariant,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            )
+                        )
+                        OutlinedTextField(
+                            value = presetDuration,
+                            onValueChange = { presetDuration = it },
+                            label = { Text("Duration (Min)", color = Color.Gray) },
+                            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+                            singleLine = true,
+                            modifier = Modifier.weight(1f),
+                            colors = TextFieldDefaults.colors(
+                                focusedContainerColor = CosmicSurfaceVariant,
+                                unfocusedContainerColor = CosmicSurfaceVariant,
+                                focusedTextColor = Color.White,
+                                unfocusedTextColor = Color.White
+                            )
+                        )
+                    }
+                }
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        val totalVal = presetTotal.toIntOrNull() ?: 10
+                        val attemptVal = presetAttempted.toIntOrNull() ?: 0
+                        val correctVal = presetCorrect.toIntOrNull() ?: 0
+                        val durationVal = presetDuration.toIntOrNull() ?: 20
+
+                        if (presetTitle.trim().isNotEmpty()) {
+                            viewModel.addDppPreset(
+                                title = presetTitle,
+                                subject = presetSubject,
+                                totalQuestions = totalVal,
+                                attempted = attemptVal.coerceAtMost(totalVal),
+                                correct = correctVal.coerceAtMost(attemptVal.coerceAtMost(totalVal)),
+                                durationMinutes = durationVal
+                            )
+                            showAddPresetDialog = false
+                        }
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = CosmicAccentCheck)
+                ) {
+                    Text("Create Preset", color = Color.White)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAddPresetDialog = false }) {
+                    Text("Cancel", color = Color.Gray)
+                }
+            },
+            containerColor = CosmicSurface,
+            textContentColor = Color.LightGray,
+            titleContentColor = Color.White
+        )
     }
 }
 

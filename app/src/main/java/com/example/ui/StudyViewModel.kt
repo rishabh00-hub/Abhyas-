@@ -85,7 +85,7 @@ class StudyViewModel(
         prefs.edit().putBoolean("is_dark_theme", isDarkTheme).apply()
     }
 
-    var userName by mutableStateOf(prefs.getString("user_name", "Aspirant Aarav") ?: "Aspirant Aarav")
+    var userName by mutableStateOf(prefs.getString("user_name", "Aspirant") ?: "Aspirant")
         private set
     var userPlatform by mutableStateOf(prefs.getString("user_platform", "Physics Wallah") ?: "Physics Wallah")
         private set
@@ -95,7 +95,7 @@ class StudyViewModel(
         private set
 
     fun updateProfile(name: String, platform: String, batch: String, preparation: String) {
-        userName = name.trim().ifEmpty { "Aspirant Aarav" }
+        userName = name.trim().ifEmpty { "Aspirant" }
         userPlatform = platform.trim().ifEmpty { "Physics Wallah" }
         userBatch = batch.trim().ifEmpty { "Lakshya JEE 2026" }
         userPreparation = preparation.trim().ifEmpty { "IIT JEE Preparation" }
@@ -113,8 +113,16 @@ class StudyViewModel(
     var targetTemplates by mutableStateOf<List<TargetTemplate>>(emptyList())
         private set
 
+    var dppPresets by mutableStateOf<List<DppPreset>>(emptyList())
+        private set
+
+    var todayDate by mutableStateOf(currentDateString())
+        private set
+
     init {
         loadTemplates()
+        loadDppPresets()
+        startTodayDateUpdater()
     }
 
     private fun loadTemplates() {
@@ -160,6 +168,69 @@ class StudyViewModel(
             "${it.id}###${it.subject}###${it.batch}###${it.type}###${it.chapter}###${it.durationMinutes}"
         }
         prefs.edit().putString("target_templates_json", serialized).apply()
+    }
+
+    private fun loadDppPresets() {
+        val saved = prefs.getString("dpp_presets_json", null)
+        if (saved != null) {
+            try {
+                val list = mutableListOf<DppPreset>()
+                saved.split("|||").forEach { raw ->
+                    val parts = raw.split("###")
+                    if (parts.size >= 7) {
+                        list.add(
+                            DppPreset(
+                                id = parts[0],
+                                title = parts[1],
+                                subject = parts[2],
+                                totalQuestions = parts[3].toIntOrNull() ?: 10,
+                                attempted = parts[4].toIntOrNull() ?: 0,
+                                correct = parts[5].toIntOrNull() ?: 0,
+                                durationMinutes = parts[6].toIntOrNull() ?: 20
+                            )
+                        )
+                    }
+                }
+                dppPresets = list
+            } catch (e: Exception) {
+                dppPresets = emptyList()
+            }
+        } else {
+            dppPresets = emptyList()
+        }
+    }
+
+    private fun saveDppPresets() {
+        val serialized = dppPresets.joinToString("|||") {
+            "${it.id}###${it.title}###${it.subject}###${it.totalQuestions}###${it.attempted}###${it.correct}###${it.durationMinutes}"
+        }
+        prefs.edit().putString("dpp_presets_json", serialized).apply()
+    }
+
+    fun addDppPreset(
+        title: String,
+        subject: String,
+        totalQuestions: Int,
+        attempted: Int,
+        correct: Int,
+        durationMinutes: Int
+    ) {
+        val newPreset = DppPreset(
+            id = UUID.randomUUID().toString(),
+            title = title.trim(),
+            subject = subject,
+            totalQuestions = totalQuestions,
+            attempted = attempted,
+            correct = correct,
+            durationMinutes = durationMinutes
+        )
+        dppPresets = dppPresets + newPreset
+        saveDppPresets()
+    }
+
+    fun deleteDppPreset(id: String) {
+        dppPresets = dppPresets.filter { it.id != id }
+        saveDppPresets()
     }
 
     fun addTemplate(subject: String, batch: String, type: String, chapter: String, duration: Int) {
@@ -223,7 +294,7 @@ class StudyViewModel(
 
     // Stopwatch alerts feature settings
     var stopwatchAlertType by mutableStateOf("None") // "None", "Interval", "Single"
-    var stopwatchAlertIntervalMinutes by mutableStateOf(5)
+    var stopwatchAlertIntervalSeconds by mutableStateOf(300)
 
     // Stopwatch Checkpoints state
     var stopwatchCheckpoints by mutableStateOf(listOf<StopwatchCheckpoint>())
@@ -296,14 +367,14 @@ class StudyViewModel(
                     secondsElapsedOrRemaining += 1
 
                     // Interval/Target ring checks
-                    if (secondsElapsedOrRemaining > 0 && stopwatchAlertIntervalMinutes > 0) {
+                    if (secondsElapsedOrRemaining > 0 && stopwatchAlertIntervalSeconds > 0) {
                         if (stopwatchAlertType == "Interval") {
-                            val intervalSec = stopwatchAlertIntervalMinutes * 60
+                            val intervalSec = stopwatchAlertIntervalSeconds
                             if (secondsElapsedOrRemaining % intervalSec == 0) {
                                 playIntervalBeep()
                             }
                         } else if (stopwatchAlertType == "Single") {
-                            val targetSec = stopwatchAlertIntervalMinutes * 60
+                            val targetSec = stopwatchAlertIntervalSeconds
                             if (secondsElapsedOrRemaining == targetSec) {
                                 playIntervalBeep()
                             }
@@ -457,11 +528,11 @@ class StudyViewModel(
         questionsCount: Int? = null,
         chapter: String? = null,
         lectureNumber: String? = null,
-        batch: String? = null
+        batch: String? = null,
+        autoAddConfig: AutoAddConfig? = null
     ) {
         viewModelScope.launch {
-            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            val dateStr = if (targetDate.isEmpty()) format.format(Date()) else targetDate
+            val dateStr = normalizeTargetDate(targetDate) ?: return@launch
 
             val newTarget = DailyTarget(
                 id = UUID.randomUUID().toString(),
@@ -481,6 +552,9 @@ class StudyViewModel(
                 lectureNumber = lectureNumber?.trim()?.ifEmpty { null }
             )
             repository.insertTarget(newTarget)
+            if (autoAddConfig != null) {
+                insertAutoTargets(newTarget, autoAddConfig)
+            }
         }
     }
 
@@ -756,6 +830,117 @@ class StudyViewModel(
                 Log.e("AudioSynth", "Error interval beep", e)
             }
         }
+
+        private fun startTodayDateUpdater() {
+            viewModelScope.launch {
+                while (true) {
+                    todayDate = currentDateString()
+                    delay(calculateDelayToNextDay())
+                }
+            }
+        }
+
+        private fun currentDateString(): String {
+            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            format.isLenient = false
+            return format.format(Date())
+        }
+
+        private fun normalizeTargetDate(targetDate: String): String? {
+            val trimmed = targetDate.trim()
+            if (trimmed.isEmpty()) {
+                return todayDate
+            }
+            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            format.isLenient = false
+            return try {
+                val parsed = format.parse(trimmed) ?: return null
+                format.format(parsed)
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        private fun parseStrictDate(dateStr: String): Date? {
+            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            format.isLenient = false
+            return try {
+                format.parse(dateStr)
+            } catch (e: Exception) {
+                null
+            }
+        }
+
+        private fun calculateDelayToNextDay(): Long {
+            val now = Calendar.getInstance()
+            val next = now.clone() as Calendar
+            next.add(Calendar.DAY_OF_YEAR, 1)
+            next.set(Calendar.HOUR_OF_DAY, 0)
+            next.set(Calendar.MINUTE, 0)
+            next.set(Calendar.SECOND, 5)
+            next.set(Calendar.MILLISECOND, 0)
+            val delayMillis = next.timeInMillis - now.timeInMillis
+            return if (delayMillis < 60_000L) 60_000L else delayMillis
+        }
+
+        private suspend fun insertAutoTargets(baseTarget: DailyTarget, config: AutoAddConfig) {
+            if (config.maxLectureNumber == null && config.endDate == null) return
+            val lectureText = baseTarget.lectureNumber ?: return
+            val lectureInfo = extractNumberInfo(lectureText) ?: return
+            val titleInfo = extractNumberInfo(baseTarget.title)
+            val baseDate = parseStrictDate(baseTarget.targetDate) ?: return
+            val endDate = config.endDate?.let { parseStrictDate(it) }
+            var nextNumber = lectureInfo.number + 1
+            val calendar = Calendar.getInstance().apply {
+                time = baseDate
+                add(Calendar.DAY_OF_YEAR, 1)
+            }
+
+            while (true) {
+                if (config.maxLectureNumber != null && nextNumber > config.maxLectureNumber) break
+                if (endDate != null && calendar.time.after(endDate)) break
+
+                val nextLecture = formatWithNumber(lectureInfo, nextNumber)
+                val nextTitle = titleInfo?.let { formatWithNumber(it, nextNumber) } ?: baseTarget.title
+                val nextTarget = baseTarget.copy(
+                    id = UUID.randomUUID().toString(),
+                    title = nextTitle,
+                    status = "not-started",
+                    durationLogged = 0,
+                    createdAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault()).format(Date()),
+                    targetDate = currentDateFormatter().format(calendar.time),
+                    lectureNumber = nextLecture,
+                    dppSolvedCount = if (baseTarget.dppQuestionsCount != null) 0 else null,
+                    dppCorrectCount = if (baseTarget.dppQuestionsCount != null) 0 else null
+                )
+                repository.insertTarget(nextTarget)
+                nextNumber += 1
+                calendar.add(Calendar.DAY_OF_YEAR, 1)
+            }
+        }
+
+        private fun extractNumberInfo(text: String): NumberInfo? {
+            val match = "(\\d+)(?!.*\\d)".toRegex().find(text) ?: return null
+            val numberStr = match.value
+            val number = numberStr.toIntOrNull() ?: return null
+            val start = match.range.first
+            val end = match.range.last + 1
+            return NumberInfo(
+                prefix = text.substring(0, start),
+                number = number,
+                suffix = text.substring(end),
+                width = numberStr.length
+            )
+        }
+
+        private fun formatWithNumber(info: NumberInfo, number: Int): String {
+            val padded = number.toString().padStart(info.width, '0')
+            return "${info.prefix}$padded${info.suffix}"
+        }
+
+        private fun currentDateFormatter(): SimpleDateFormat {
+            return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply { isLenient = false }
+        }
     }
 }
 
@@ -789,4 +974,26 @@ data class TargetTemplate(
     val type: String,
     val chapter: String,
     val durationMinutes: Int
+)
+
+data class DppPreset(
+    val id: String,
+    val title: String,
+    val subject: String,
+    val totalQuestions: Int,
+    val attempted: Int,
+    val correct: Int,
+    val durationMinutes: Int
+)
+
+data class AutoAddConfig(
+    val maxLectureNumber: Int?,
+    val endDate: String?
+)
+
+private data class NumberInfo(
+    val prefix: String,
+    val number: Int,
+    val suffix: String,
+    val width: Int
 )

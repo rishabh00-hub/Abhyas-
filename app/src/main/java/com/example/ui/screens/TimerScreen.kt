@@ -34,7 +34,6 @@ import androidx.compose.ui.unit.sp
 import com.example.data.DailyTarget
 import com.example.ui.StudyViewModel
 import com.example.ui.theme.*
-import java.text.SimpleDateFormat
 import java.util.*
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -45,10 +44,10 @@ fun TimerScreen(viewModel: StudyViewModel) {
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
     val targets by viewModel.allTargets.collectAsState()
-    val todayStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(Date())
+    val todayStr = viewModel.todayDate
 
     // Pending today's targets to bind
-    val pendingTodayTargets = remember(targets) {
+    val pendingTodayTargets = remember(targets, todayStr) {
         targets.filter { it.targetDate == todayStr && it.status != "completed" }
     }
 
@@ -67,6 +66,16 @@ fun TimerScreen(viewModel: StudyViewModel) {
         ),
         label = "PulseGlowScale"
     )
+
+    fun formatSecondsLabel(seconds: Int): String {
+        return if (seconds < 60) {
+            "${seconds}s"
+        } else {
+            val minsPart = seconds / 60
+            val secsPart = seconds % 60
+            if (secsPart == 0) "${minsPart}m" else "${minsPart}m ${secsPart}s"
+        }
+    }
 
     // Calculate time remaining format (MM:SS) if Pomodoro, or elapsed if Stopwatch
     val totalSeconds = viewModel.secondsElapsedOrRemaining
@@ -503,10 +512,10 @@ fun TimerScreen(viewModel: StudyViewModel) {
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.spacedBy(8.dp)
                         ) {
-                            listOf(1, 2, 3, 5, 10, 15).forEach { minsPreset ->
-                                val isSelected = viewModel.stopwatchAlertIntervalMinutes == minsPreset
+                            listOf(30, 60, 120, 180, 300, 600, 900).forEach { secondsPreset ->
+                                val isSelected = viewModel.stopwatchAlertIntervalSeconds == secondsPreset
                                 OutlinedButton(
-                                    onClick = { viewModel.stopwatchAlertIntervalMinutes = minsPreset },
+                                    onClick = { viewModel.stopwatchAlertIntervalSeconds = secondsPreset },
                                     shape = RoundedCornerShape(12.dp),
                                     border = BorderStroke(1.dp, if (isSelected) CosmicPrimary else CosmicBorder),
                                     colors = ButtonDefaults.outlinedButtonColors(
@@ -515,9 +524,9 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                     ),
                                     modifier = Modifier
                                         .weight(1f)
-                                        .testTag("stopwatch_preset_${minsPreset}m")
+                                        .testTag("stopwatch_preset_${secondsPreset}s")
                                 ) {
-                                    Text("${minsPreset}m", fontSize = 11.sp, fontWeight = FontWeight.Bold)
+                                    Text(formatSecondsLabel(secondsPreset), fontSize = 11.sp, fontWeight = FontWeight.Bold)
                                 }
                             }
                         }
@@ -537,7 +546,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                 letterSpacing = 1.sp
                             )
                             Text(
-                                text = "${viewModel.stopwatchAlertIntervalMinutes} min",
+                                text = formatSecondsLabel(viewModel.stopwatchAlertIntervalSeconds),
                                 fontSize = 12.sp,
                                 color = MaterialTheme.colorScheme.onSurface,
                                 fontWeight = FontWeight.ExtraBold
@@ -550,10 +559,10 @@ fun TimerScreen(viewModel: StudyViewModel) {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             Slider(
-                                value = viewModel.stopwatchAlertIntervalMinutes.toFloat(),
-                                onValueChange = { viewModel.stopwatchAlertIntervalMinutes = it.toInt().coerceIn(1, 120) },
-                                valueRange = 1f..120f,
-                                steps = 119,
+                                value = viewModel.stopwatchAlertIntervalSeconds.toFloat(),
+                                onValueChange = { viewModel.stopwatchAlertIntervalSeconds = it.toInt().coerceIn(1, 3600) },
+                                valueRange = 1f..3600f,
+                                steps = 3599,
                                 modifier = Modifier.weight(1f),
                                 colors = SliderDefaults.colors(
                                     thumbColor = CosmicPrimary,
@@ -565,10 +574,10 @@ fun TimerScreen(viewModel: StudyViewModel) {
                             var showStopwatchTypedInput by remember { mutableStateOf(false) }
                             if (showStopwatchTypedInput) {
                                 OutlinedTextField(
-                                    value = if (viewModel.stopwatchAlertIntervalMinutes == 0) "" else viewModel.stopwatchAlertIntervalMinutes.toString(),
+                                    value = if (viewModel.stopwatchAlertIntervalSeconds == 0) "" else viewModel.stopwatchAlertIntervalSeconds.toString(),
                                     onValueChange = { newVal ->
                                         val parsed = newVal.filter { it.isDigit() }.toIntOrNull() ?: 1
-                                        viewModel.stopwatchAlertIntervalMinutes = parsed.coerceIn(1, 120)
+                                        viewModel.stopwatchAlertIntervalSeconds = parsed.coerceIn(1, 3600)
                                     },
                                     singleLine = true,
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
@@ -607,9 +616,9 @@ fun TimerScreen(viewModel: StudyViewModel) {
 
                         Text(
                             text = if (viewModel.stopwatchAlertType == "Interval") {
-                                "🔔 Rings briefly every ${viewModel.stopwatchAlertIntervalMinutes} minutes to track question paces."
+                                "🔔 Rings briefly every ${formatSecondsLabel(viewModel.stopwatchAlertIntervalSeconds)} to track question paces."
                             } else {
-                                "🔔 Rings briefly once when stopwatch reaches ${viewModel.stopwatchAlertIntervalMinutes} minutes."
+                                "🔔 Rings briefly once when stopwatch reaches ${formatSecondsLabel(viewModel.stopwatchAlertIntervalSeconds)}."
                             },
                             fontSize = 11.sp,
                             color = MaterialTheme.colorScheme.onSurfaceVariant
