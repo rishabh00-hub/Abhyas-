@@ -15,7 +15,11 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.drawBehind
+import androidx.compose.ui.draw.scale
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
@@ -41,6 +45,9 @@ import java.util.*
 fun MainAppContainer(viewModel: StudyViewModel) {
     var isFloatingMode by remember { mutableStateOf(false) }
     var swipeOffsetX by remember { mutableStateOf(0f) }
+
+    // Normalized drag progress: 0f = no drag, 1f = threshold reached (200px)
+    val dragProgress = (swipeOffsetX / 200f).coerceIn(0f, 1f)
 
     // Coordinates of the drag floating button (relative to default bottom-right)
     var fabOffsetX by remember { mutableStateOf(0f) }
@@ -112,6 +119,23 @@ fun MainAppContainer(viewModel: StudyViewModel) {
                             )
                         }
                         .padding(bottom = 32.dp, end = 32.dp)
+                        .drawBehind {
+                            val center = Offset(size.width / 2f, size.height / 2f)
+                            val glowRadius = size.minDimension * 2.0f
+                            drawCircle(
+                                brush = Brush.radialGradient(
+                                    colors = listOf(
+                                        CosmicPrimary.copy(alpha = 0.55f),
+                                        CosmicSecondary.copy(alpha = 0.30f),
+                                        Color.Transparent
+                                    ),
+                                    center = center,
+                                    radius = glowRadius
+                                ),
+                                radius = glowRadius,
+                                center = center
+                            )
+                        }
                 ) {
                     Card(
                         modifier = Modifier
@@ -225,7 +249,60 @@ fun MainAppContainer(viewModel: StudyViewModel) {
                     }
                 }
             } else {
-                // 3. Floating Bottom Navigation Capsule overlay with SLIDING GESTURE
+                // Preview FAB: appears gradually as the nav bar is dragged right.
+                // Alpha and scale are bound directly to dragProgress (0f→1f).
+                if (dragProgress > 0f) {
+                    Box(
+                        modifier = Modifier
+                            .align(Alignment.BottomEnd)
+                            .padding(bottom = 32.dp, end = 32.dp)
+                            .drawBehind {
+                                val center = Offset(size.width / 2f, size.height / 2f)
+                                // Glow radius and color alpha grow with dragProgress
+                                val glowRadius = size.minDimension * (1.2f + 0.8f * dragProgress)
+                                drawCircle(
+                                    brush = Brush.radialGradient(
+                                        colors = listOf(
+                                            CosmicPrimary.copy(alpha = 0.6f * dragProgress),
+                                            CosmicSecondary.copy(alpha = 0.3f * dragProgress),
+                                            Color.Transparent
+                                        ),
+                                        center = center,
+                                        radius = glowRadius
+                                    ),
+                                    radius = glowRadius,
+                                    center = center
+                                )
+                            }
+                    ) {
+                        Card(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .alpha(dragProgress)
+                                .scale(0.5f + 0.5f * dragProgress),
+                            shape = CircleShape,
+                            colors = CardDefaults.cardColors(
+                                containerColor = MaterialTheme.colorScheme.surface
+                            ),
+                            elevation = CardDefaults.cardElevation(
+                                defaultElevation = 8.dp * dragProgress
+                            )
+                        ) {
+                            Box(
+                                modifier = Modifier.fillMaxSize(),
+                                contentAlignment = Alignment.Center
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Widgets,
+                                    contentDescription = "Restore page switching buttons",
+                                    tint = CosmicSecondary,
+                                    modifier = Modifier.size(26.dp)
+                                )
+                            }
+                        }
+                    }
+                }
+                // Floating Bottom Navigation Capsule with SLIDING GESTURE
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
