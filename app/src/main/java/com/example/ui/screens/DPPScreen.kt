@@ -636,6 +636,9 @@ fun DPPScreen(viewModel: StudyViewModel) {
                     } else {
                         // CUSTOM DRAWN DOUBLE-LINE CHART
                         var selectedCoordinateIndex by remember { mutableStateOf<Int?>(null) }
+                        val secondaryColor = MaterialTheme.colorScheme.secondary
+                        val tertiaryColor = MaterialTheme.colorScheme.tertiary
+                        val onSurfaceColor = MaterialTheme.colorScheme.onSurface
 
                         Box(
                             modifier = Modifier
@@ -717,7 +720,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 // 1. Draw Percentage Scored Line (Indigo)
                                 for (pIdx in 0 until dppPointsScored.size - 1) {
                                     drawLine(
-                                        color = MaterialTheme.colorScheme.secondary,
+                                        color = secondaryColor,
                                         start = dppPointsScored[pIdx],
                                         end = dppPointsScored[pIdx + 1],
                                         strokeWidth = 3f
@@ -727,7 +730,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 // 2. Draw Accuracy Line (Emerald)
                                 for (pIdx in 0 until dppPointsAccuracy.size - 1) {
                                     drawLine(
-                                        color = MaterialTheme.colorScheme.tertiary,
+                                        color = tertiaryColor,
                                         start = dppPointsAccuracy[pIdx],
                                         end = dppPointsAccuracy[pIdx + 1],
                                         strokeWidth = 3f
@@ -737,13 +740,13 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 // Draw little coordinates circles dots
                                 dppPointsScored.forEachIndexed { dIdx, point ->
                                     drawCircle(
-                                        color = if (selectedCoordinateIndex == dIdx) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.secondary,
+                                        color = if (selectedCoordinateIndex == dIdx) onSurfaceColor else secondaryColor,
                                         radius = if (selectedCoordinateIndex == dIdx) 6f else 4f,
                                         center = point
                                     )
                                     if (selectedCoordinateIndex == dIdx) {
                                         drawCircle(
-                                            color = MaterialTheme.colorScheme.secondary,
+                                            color = secondaryColor,
                                             radius = 12f,
                                             center = point,
                                             style = Stroke(2f)
@@ -753,13 +756,13 @@ fun DPPScreen(viewModel: StudyViewModel) {
 
                                 dppPointsAccuracy.forEachIndexed { dIdx, point ->
                                     drawCircle(
-                                        color = if (selectedCoordinateIndex == dIdx) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.tertiary,
+                                        color = if (selectedCoordinateIndex == dIdx) onSurfaceColor else tertiaryColor,
                                         radius = if (selectedCoordinateIndex == dIdx) 6f else 4f,
                                         center = point
                                     )
                                     if (selectedCoordinateIndex == dIdx) {
                                         drawCircle(
-                                            color = MaterialTheme.colorScheme.tertiary,
+                                            color = tertiaryColor,
                                             radius = 12f,
                                             center = point,
                                             style = Stroke(2f)
