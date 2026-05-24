@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -19,6 +20,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -32,7 +34,7 @@ import com.example.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun HistoryScreen(viewModel: StudyViewModel) {
     val CosmicSurface = MaterialTheme.colorScheme.surface
@@ -52,6 +54,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
 
     val subjectsList = listOf("Physics", "Chemistry", "Maths", "Biology", "General", "Other")
     val typesList = listOf("Lecture", "DPP", "Homework", "Backlog", "Revision", "Self Study", "Test")
+    val isCompact = LocalConfiguration.current.screenWidthDp < 360
 
     // Timeline calculations setup
     val calendar = Calendar.getInstance()
@@ -175,12 +178,16 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                 border = BorderStroke(1.dp, CosmicBorder)
             ) {
                 Column(modifier = Modifier.padding(14.dp)) {
-                    Row(
+                    FlowRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        maxItemsInEachRow = if (isCompact) 1 else 2
                     ) {
-                        Row(verticalAlignment = Alignment.CenterVertically) {
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f)
+                        ) {
                             Icon(imageVector = Icons.Default.Timeline, contentDescription = "", tint = CosmicSecondary)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Chronicle Summary Stats", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
@@ -190,7 +197,8 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                         Surface(
                             shape = RoundedCornerShape(12.dp),
                             color = CosmicPrimary.copy(alpha = 0.2f),
-                            border = BorderStroke(1.dp, CosmicPrimary)
+                            border = BorderStroke(1.dp, CosmicPrimary),
+                            modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.wrapContentWidth()
                         ) {
                             Text(
                                 text = "${cumulativeMinutesFiltered} Minutes Clocked",
@@ -206,13 +214,15 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                     Spacer(modifier = Modifier.height(14.dp))
 
                     // Filters Toolbar Row
-                    Row(
+                    FlowRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        horizontalArrangement = Arrangement.spacedBy(6.dp),
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
+                        maxItemsInEachRow = if (isCompact) 1 else 2
                     ) {
                         // 1. Subject filter Selector dropdown
                         var subExp by remember { mutableStateOf(false) }
-                        Box(modifier = Modifier.weight(1f)) {
+                        Box(modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f)) {
                             OutlinedButton(
                                 onClick = { subExp = true },
                                 modifier = Modifier.fillMaxWidth(),
@@ -247,7 +257,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
 
                         // 2. Timeline filter Selector choice dropdown
                         var timeExp by remember { mutableStateOf(false) }
-                        Box(modifier = Modifier.weight(1f)) {
+                        Box(modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f)) {
                             OutlinedButton(
                                 onClick = { timeExp = true },
                                 modifier = Modifier.fillMaxWidth(),
@@ -349,13 +359,15 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                                 )
                             )
 
-                            Row(
+                            FlowRow(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                maxItemsInEachRow = if (isCompact) 1 else 2
                             ) {
                                 // Subject chooser dropdown in manual entry
                                 var subExp by remember { mutableStateOf(false) }
-                                Box(modifier = Modifier.weight(1f)) {
+                                Box(modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f)) {
                                     OutlinedButton(
                                         onClick = { subExp = true },
                                         modifier = Modifier.fillMaxWidth(),
@@ -389,7 +401,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
 
                                 // Category choice
                                 var typeExp by remember { mutableStateOf(false) }
-                                Box(modifier = Modifier.weight(1f)) {
+                                Box(modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f)) {
                                     OutlinedButton(
                                         onClick = { typeExp = true },
                                         modifier = Modifier.fillMaxWidth(),
@@ -530,6 +542,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
 }
 
 // --- SUBCOMPONENT: HISTORY SESSION CARD ---
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun SessionHistoryItemCard(
     session: StudySession,
@@ -561,6 +574,7 @@ fun SessionHistoryItemCard(
     }
 
     var isExpanded by remember { mutableStateOf(false) }
+    val isCompact = LocalConfiguration.current.screenWidthDp < 360
 
     Card(
         modifier = Modifier
@@ -569,78 +583,116 @@ fun SessionHistoryItemCard(
         colors = CardDefaults.cardColors(containerColor = CosmicSurface),
         border = BorderStroke(1.dp, CosmicBorder)
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(12.dp),
-            verticalAlignment = Alignment.Top,
-            horizontalArrangement = Arrangement.SpaceBetween
+            verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Column(modifier = Modifier.weight(1f)) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(6.dp)
-                ) {
-                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(subjectLabelColor))
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.Top,
+                horizontalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(subjectLabelColor))
+                        Text(
+                            text = "${session.subject} · ${session.type}",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
+                    Spacer(modifier = Modifier.height(6.dp))
+
                     Text(
-                        text = "${session.subject} · ${session.type}",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        text = if (session.notes != null) "Focus: ${session.notes}" else "Study Block Done",
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium,
+                        color = MaterialTheme.colorScheme.onSurface,
+                        maxLines = if (isExpanded) 20 else 1,
+                        overflow = TextOverflow.Ellipsis
+                    )
+
+                    if (!isExpanded && session.notes != null && (session.notes.contains("\n") || session.notes.length > 40)) {
+                        Text(
+                            text = "▼ Tap to expand notes & checkpoints",
+                            color = CosmicSecondary,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            modifier = Modifier.padding(top = 4.dp)
+                        )
+                    }
+
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = rawDateStr,
+                        fontSize = 10.sp,
+                        color = Color.Gray,
                         fontFamily = FontFamily.Monospace
                     )
                 }
-                Spacer(modifier = Modifier.height(6.dp))
-                
-                Text(
-                    text = if (session.notes != null) "Focus: ${session.notes}" else "Study Block Done",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Medium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                    maxLines = if (isExpanded) 20 else 1,
-                    overflow = TextOverflow.Ellipsis
-                )
 
-                if (!isExpanded && session.notes != null && (session.notes.contains("\n") || session.notes.length > 40)) {
-                    Text(
-                        text = "▼ Tap to expand notes & checkpoints",
-                        color = CosmicSecondary,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        modifier = Modifier.padding(top = 4.dp)
-                    )
+                if (!isCompact) {
+                    Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Surface(
+                            shape = RoundedCornerShape(12.dp),
+                            color = CosmicSurfaceVariant,
+                            border = BorderStroke(0.5.dp, CosmicBorder)
+                        ) {
+                            Text(
+                                text = "${totalMin}m ${leftSec}s",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = CosmicSecondary,
+                                fontFamily = FontFamily.Monospace,
+                                modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                            )
+                        }
+
+                        IconButton(
+                            onClick = onDelete,
+                            modifier = Modifier.testTag("delete_session_log_btn_${session.id}")
+                        ) {
+                            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete", tint = Color.Gray, modifier = Modifier.size(16.dp))
+                        }
+                    }
                 }
-
-                Spacer(modifier = Modifier.height(6.dp))
-                Text(
-                    text = rawDateStr,
-                    fontSize = 10.sp,
-                    color = Color.Gray,
-                    fontFamily = FontFamily.Monospace
-                )
             }
 
-            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Surface(
-                    shape = RoundedCornerShape(12.dp),
-                    color = CosmicSurfaceVariant,
-                    border = BorderStroke(0.5.dp, CosmicBorder)
+            if (isCompact) {
+                FlowRow(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                    maxItemsInEachRow = 2
                 ) {
-                    Text(
-                        text = "${totalMin}m ${leftSec}s",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = CosmicSecondary,
-                        fontFamily = FontFamily.Monospace,
-                        modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
-                    )
-                }
+                    Surface(
+                        shape = RoundedCornerShape(12.dp),
+                        color = CosmicSurfaceVariant,
+                        border = BorderStroke(0.5.dp, CosmicBorder)
+                    ) {
+                        Text(
+                            text = "${totalMin}m ${leftSec}s",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = CosmicSecondary,
+                            fontFamily = FontFamily.Monospace,
+                            modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
+                        )
+                    }
 
-                IconButton(
-                    onClick = onDelete,
-                    modifier = Modifier.testTag("delete_session_log_btn_${session.id}")
-                ) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete", tint = Color.Gray, modifier = Modifier.size(16.dp))
+                    IconButton(
+                        onClick = onDelete,
+                        modifier = Modifier.testTag("delete_session_log_btn_${session.id}")
+                    ) {
+                        Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete", tint = Color.Gray, modifier = Modifier.size(16.dp))
+                    }
                 }
             }
         }

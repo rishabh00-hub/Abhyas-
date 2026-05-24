@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -23,6 +24,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -41,7 +43,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlinx.coroutines.launch
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun TargetsScreen(viewModel: StudyViewModel) {
     val CosmicSurface = MaterialTheme.colorScheme.surface
@@ -50,6 +52,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
 
     val targets by viewModel.allTargets.collectAsState()
     val aspirations by viewModel.allAspirations.collectAsState()
+    val isCompact = LocalConfiguration.current.screenWidthDp < 360
 
     // Form states
     var title by remember { mutableStateOf("") }
@@ -152,117 +155,240 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                 colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface),
                 border = BorderStroke(1.dp, MaterialTheme.colorScheme.outline)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    // Profile initials avatar
-                    Box(
+                if (isCompact) {
+                    Column(
                         modifier = Modifier
-                            .size(56.dp)
-                            .clip(CircleShape)
-                            .background(
-                                Brush.linearGradient(listOf(CosmicPrimary, CosmicSecondary))
-                            )
-                            .border(BorderStroke(2.dp, Color.White.copy(alpha = 0.4f)), CircleShape),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
                     ) {
-                        val initials = viewModel.userName.split(" ")
-                            .take(2)
-                            .mapNotNull { it.firstOrNull()?.uppercaseChar() }
-                            .joinToString("")
-                        Text(
-                            text = initials.ifEmpty { "A" },
-                            fontSize = 20.sp,
-                            fontWeight = FontWeight.Black,
-                            color = Color.White
-                        )
-                    }
-
-                    Spacer(modifier = Modifier.width(14.dp))
-
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text(
-                            text = viewModel.userName,
-                            fontSize = 16.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurface,
-                            maxLines = 1,
-                            overflow = TextOverflow.Ellipsis
-                        )
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.School,
-                                contentDescription = "Exam Goal",
-                                tint = MaterialTheme.colorScheme.secondary,
-                                modifier = Modifier.size(12.dp)
-                            )
-                            Text(
-                                text = viewModel.userPreparation,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
-                        }
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            modifier = Modifier.padding(top = 2.dp)
+                            modifier = Modifier.fillMaxWidth(),
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
                             Box(
                                 modifier = Modifier
-                                    .clip(RoundedCornerShape(4.dp))
-                                    .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f))
-                                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    .size(56.dp)
+                                    .clip(CircleShape)
+                                    .background(
+                                        Brush.linearGradient(listOf(CosmicPrimary, CosmicSecondary))
+                                    )
+                                    .border(BorderStroke(2.dp, Color.White.copy(alpha = 0.4f)), CircleShape),
+                                contentAlignment = Alignment.Center
                             ) {
+                                val initials = viewModel.userName.split(" ")
+                                    .take(2)
+                                    .mapNotNull { it.firstOrNull()?.uppercaseChar() }
+                                    .joinToString("")
                                 Text(
-                                    text = "${viewModel.userPlatform} • ${viewModel.userBatch}",
-                                    fontSize = 10.sp,
-                                    color = MaterialTheme.colorScheme.secondary,
-                                    fontWeight = FontWeight.Bold
+                                    text = initials.ifEmpty { "A" },
+                                    fontSize = 20.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = Color.White
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.width(14.dp))
+
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = viewModel.userName,
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface,
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp)
+                                ) {
+                                    Icon(
+                                        imageVector = Icons.Default.School,
+                                        contentDescription = "Exam Goal",
+                                        tint = MaterialTheme.colorScheme.secondary,
+                                        modifier = Modifier.size(12.dp)
+                                    )
+                                    Text(
+                                        text = viewModel.userPreparation,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.SemiBold,
+                                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                                    )
+                                }
+                                Row(
+                                    verticalAlignment = Alignment.CenterVertically,
+                                    horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                    modifier = Modifier.padding(top = 2.dp)
+                                ) {
+                                    Box(
+                                        modifier = Modifier
+                                            .clip(RoundedCornerShape(4.dp))
+                                            .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f))
+                                            .padding(horizontal = 6.dp, vertical = 2.dp)
+                                    ) {
+                                        Text(
+                                            text = "${viewModel.userPlatform} • ${viewModel.userBatch}",
+                                            fontSize = 10.sp,
+                                            color = MaterialTheme.colorScheme.secondary,
+                                            fontWeight = FontWeight.Bold
+                                        )
+                                    }
+                                }
+                            }
+                        }
+
+                        FlowRow(
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            maxItemsInEachRow = 2
+                        ) {
+                            IconButton(
+                                onClick = { viewModel.toggleTheme() },
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                                    .testTag("theme_toggle_button")
+                            ) {
+                                Icon(
+                                    imageVector = if (viewModel.isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                                    contentDescription = "Toggle Theme",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+
+                            IconButton(
+                                onClick = { showProfileEditDialog = true },
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edit Profile",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(16.dp)
                                 )
                             }
                         }
                     }
-
+                } else {
                     Row(
-                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        IconButton(
-                            onClick = { viewModel.toggleTheme() },
+                        // Profile initials avatar
+                        Box(
                             modifier = Modifier
-                                .size(36.dp)
+                                .size(56.dp)
                                 .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                                .testTag("theme_toggle_button")
+                                .background(
+                                    Brush.linearGradient(listOf(CosmicPrimary, CosmicSecondary))
+                                )
+                                .border(BorderStroke(2.dp, Color.White.copy(alpha = 0.4f)), CircleShape),
+                            contentAlignment = Alignment.Center
                         ) {
-                            Icon(
-                                imageVector = if (viewModel.isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
-                                contentDescription = "Toggle Theme",
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(18.dp)
+                            val initials = viewModel.userName.split(" ")
+                                .take(2)
+                                .mapNotNull { it.firstOrNull()?.uppercaseChar() }
+                                .joinToString("")
+                            Text(
+                                text = initials.ifEmpty { "A" },
+                                fontSize = 20.sp,
+                                fontWeight = FontWeight.Black,
+                                color = Color.White
                             )
                         }
 
-                        IconButton(
-                            onClick = { showProfileEditDialog = true },
-                            modifier = Modifier
-                                .size(36.dp)
-                                .clip(CircleShape)
-                                .background(MaterialTheme.colorScheme.surfaceVariant)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.Edit,
-                                contentDescription = "Edit Profile",
-                                tint = MaterialTheme.colorScheme.onSurface,
-                                modifier = Modifier.size(16.dp)
+                        Spacer(modifier = Modifier.width(14.dp))
+
+                        Column(modifier = Modifier.weight(1f)) {
+                            Text(
+                                text = viewModel.userName,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                maxLines = 1,
+                                overflow = TextOverflow.Ellipsis
                             )
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.School,
+                                    contentDescription = "Exam Goal",
+                                    tint = MaterialTheme.colorScheme.secondary,
+                                    modifier = Modifier.size(12.dp)
+                                )
+                                Text(
+                                    text = viewModel.userPreparation,
+                                    fontSize = 11.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(6.dp),
+                                modifier = Modifier.padding(top = 2.dp)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .clip(RoundedCornerShape(4.dp))
+                                        .background(MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f))
+                                        .padding(horizontal = 6.dp, vertical = 2.dp)
+                                ) {
+                                    Text(
+                                        text = "${viewModel.userPlatform} • ${viewModel.userBatch}",
+                                        fontSize = 10.sp,
+                                        color = MaterialTheme.colorScheme.secondary,
+                                        fontWeight = FontWeight.Bold
+                                    )
+                                }
+                            }
+                        }
+
+                        Row(
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            IconButton(
+                                onClick = { viewModel.toggleTheme() },
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                                    .testTag("theme_toggle_button")
+                            ) {
+                                Icon(
+                                    imageVector = if (viewModel.isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
+                                    contentDescription = "Toggle Theme",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                            }
+
+                            IconButton(
+                                onClick = { showProfileEditDialog = true },
+                                modifier = Modifier
+                                    .size(36.dp)
+                                    .clip(CircleShape)
+                                    .background(MaterialTheme.colorScheme.surfaceVariant)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.Edit,
+                                    contentDescription = "Edit Profile",
+                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    modifier = Modifier.size(16.dp)
+                                )
+                            }
                         }
                     }
                 }
@@ -283,87 +409,173 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                 colors = CardDefaults.cardColors(containerColor = CosmicSurface),
                 border = BorderStroke(1.dp, CosmicBorder)
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Column(modifier = Modifier.weight(1f)) {
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Default.DoneAll,
-                                contentDescription = "Progress Tracker",
-                                tint = CosmicSecondary,
-                                modifier = Modifier.size(18.dp)
-                            )
-                            Text(
-                                text = "Today's Target Progress",
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = MaterialTheme.colorScheme.onSurface
+                if (isCompact) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalArrangement = Arrangement.spacedBy(12.dp)
+                    ) {
+                        Column {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.DoneAll,
+                                    contentDescription = "Progress Tracker",
+                                    tint = CosmicSecondary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = "Today's Target Progress",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            if (totalToday > 0) {
+                                Text(
+                                    text = "$completedToday of $totalToday targets completed today",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            } else {
+                                Text(
+                                    text = "No targets set for today. Plan some below! 🎯",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = FontWeight.Normal
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            LinearProgressIndicator(
+                                progress = { if (totalToday > 0) completedToday.toFloat() / totalToday.toFloat() else 0f },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .clip(RoundedCornerShape(4.dp)),
+                                color = if (todayPercent == 100) CosmicAccentCheck else CosmicSecondary,
+                                trackColor = CosmicSurfaceVariant
                             )
                         }
 
-                        Spacer(modifier = Modifier.height(6.dp))
-
-                        if (totalToday > 0) {
-                            Text(
-                                text = "$completedToday of $totalToday targets completed today",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.Medium
-                            )
-                        } else {
-                            Text(
-                                text = "No targets set for today. Plan some below! 🎯",
-                                fontSize = 12.sp,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant,
-                                fontWeight = FontWeight.Normal
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        LinearProgressIndicator(
-                            progress = { if (totalToday > 0) completedToday.toFloat() / totalToday.toFloat() else 0f },
+                        Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(8.dp)
-                                .clip(RoundedCornerShape(4.dp)),
-                            color = if (todayPercent == 100) CosmicAccentCheck else CosmicSecondary,
-                            trackColor = CosmicSurfaceVariant
-                        )
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(
+                                    if (todayPercent == 100) CosmicAccentCheck.copy(alpha = 0.15f)
+                                    else CosmicSecondary.copy(alpha = 0.15f)
+                                )
+                                .padding(vertical = 8.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "$todayPercent%",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = if (todayPercent == 100) CosmicAccentCheck else CosmicSecondary
+                                )
+                                Text(
+                                    text = "Completed",
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
+                        }
                     }
-
-                    Spacer(modifier = Modifier.width(16.dp))
-
-                    Box(
+                } else {
+                    Row(
                         modifier = Modifier
-                            .size(56.dp)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(
-                                if (todayPercent == 100) CosmicAccentCheck.copy(alpha = 0.15f)
-                                else CosmicSecondary.copy(alpha = 0.15f)
-                            ),
-                        contentAlignment = Alignment.Center
+                            .fillMaxWidth()
+                            .padding(16.dp),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                            Text(
-                                text = "$todayPercent%",
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.Black,
-                                color = if (todayPercent == 100) CosmicAccentCheck else CosmicSecondary
+                        Column(modifier = Modifier.weight(1f)) {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            ) {
+                                Icon(
+                                    imageVector = Icons.Default.DoneAll,
+                                    contentDescription = "Progress Tracker",
+                                    tint = CosmicSecondary,
+                                    modifier = Modifier.size(18.dp)
+                                )
+                                Text(
+                                    text = "Today's Target Progress",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = MaterialTheme.colorScheme.onSurface
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(6.dp))
+
+                            if (totalToday > 0) {
+                                Text(
+                                    text = "$completedToday of $totalToday targets completed today",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = FontWeight.Medium
+                                )
+                            } else {
+                                Text(
+                                    text = "No targets set for today. Plan some below! 🎯",
+                                    fontSize = 12.sp,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                                    fontWeight = FontWeight.Normal
+                                )
+                            }
+
+                            Spacer(modifier = Modifier.height(8.dp))
+
+                            LinearProgressIndicator(
+                                progress = { if (totalToday > 0) completedToday.toFloat() / totalToday.toFloat() else 0f },
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(8.dp)
+                                    .clip(RoundedCornerShape(4.dp)),
+                                color = if (todayPercent == 100) CosmicAccentCheck else CosmicSecondary,
+                                trackColor = CosmicSurfaceVariant
                             )
-                            Text(
-                                text = "Completed",
-                                fontSize = 8.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = MaterialTheme.colorScheme.onSurfaceVariant
-                            )
+                        }
+
+                        Spacer(modifier = Modifier.width(16.dp))
+
+                        Box(
+                            modifier = Modifier
+                                .size(56.dp)
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(
+                                    if (todayPercent == 100) CosmicAccentCheck.copy(alpha = 0.15f)
+                                    else CosmicSecondary.copy(alpha = 0.15f)
+                                ),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                                Text(
+                                    text = "$todayPercent%",
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Black,
+                                    color = if (todayPercent == 100) CosmicAccentCheck else CosmicSecondary
+                                )
+                                Text(
+                                    text = "Completed",
+                                    fontSize = 8.sp,
+                                    fontWeight = FontWeight.SemiBold,
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                                )
+                            }
                         }
                     }
                 }
@@ -521,9 +733,11 @@ fun TargetsScreen(viewModel: StudyViewModel) {
 
         // --- 5. FILTER PILLS ---
         item {
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                maxItemsInEachRow = if (isCompact) 1 else 3
             ) {
                 listOf(
                     "today" to "Aaj ke Targets",
@@ -544,7 +758,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
 
                     Box(
                         modifier = Modifier
-                            .weight(1f)
+                            .let { if (isCompact) it.fillMaxWidth() else it.weight(1f) }
                             .clip(RoundedCornerShape(24.dp))
                             .background(bgColors)
                             .border(borderStroke, RoundedCornerShape(24.dp))
@@ -635,12 +849,14 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                             )
 
                             // Subject select and Category select drop downs
-                            Row(
+                            FlowRow(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                maxItemsInEachRow = if (isCompact) 1 else 2
                             ) {
                                 var subExp by remember { mutableStateOf(false) }
-                                Box(modifier = Modifier.weight(1f)) {
+                                Box(modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f)) {
                                     OutlinedButton(
                                         onClick = { subExp = true },
                                         modifier = Modifier.fillMaxWidth(),
@@ -673,7 +889,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 }
 
                                 var typeExp by remember { mutableStateOf(false) }
-                                Box(modifier = Modifier.weight(1f)) {
+                                Box(modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f)) {
                                     OutlinedButton(
                                         onClick = { typeExp = true },
                                         modifier = Modifier.fillMaxWidth(),
@@ -707,9 +923,11 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                             }
 
                             // EXTRA DETAILS FIELDS as requested by the user
-                            Row(
+                            FlowRow(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                maxItemsInEachRow = if (isCompact) 1 else 2
                             ) {
                                 OutlinedTextField(
                                     value = chapterText,
@@ -717,7 +935,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     label = { Text("Chapter", color = Color.Gray, fontSize = 11.sp) },
                                     placeholder = { Text("Electrostatics", color = Color.DarkGray, fontSize = 11.sp) },
                                     singleLine = true,
-                                    modifier = Modifier.weight(1f),
+                                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = CosmicSurfaceVariant,
                                         unfocusedContainerColor = CosmicSurfaceVariant,
@@ -732,7 +950,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     label = { Text("Lecture/DPP Suffix", color = Color.Gray, fontSize = 11.sp) },
                                     placeholder = { Text("Lec 04 or DPP 03", color = Color.DarkGray, fontSize = 11.sp) },
                                     singleLine = true,
-                                    modifier = Modifier.weight(1f),
+                                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = CosmicSurfaceVariant,
                                         unfocusedContainerColor = CosmicSurfaceVariant,
@@ -742,9 +960,11 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 )
                             }
 
-                            Row(
+                            FlowRow(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                maxItemsInEachRow = if (isCompact) 1 else 2
                             ) {
                                 OutlinedTextField(
                                     value = durationMinutes,
@@ -752,7 +972,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     label = { Text("Proposed (Min)", color = Color.Gray, fontSize = 11.sp) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
-                                    modifier = Modifier.weight(1.2f),
+                                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = CosmicSurfaceVariant,
                                         unfocusedContainerColor = CosmicSurfaceVariant,
@@ -767,7 +987,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     label = { Text("Batch / Source", color = Color.Gray, fontSize = 11.sp) },
                                     placeholder = { Text(viewModel.userBatch, color = Color.DarkGray, fontSize = 11.sp) },
                                     singleLine = true,
-                                    modifier = Modifier.weight(1.5f),
+                                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = CosmicSurfaceVariant,
                                         unfocusedContainerColor = CosmicSurfaceVariant,
@@ -826,12 +1046,13 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 )
                             }
 
-                            Row(
+                            FlowRow(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.CenterVertically
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                maxItemsInEachRow = if (isCompact) 1 else 2
                             ) {
-                                Column {
+                                Column(modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f)) {
                                     Text(
                                         text = "Auto-add Next Targets",
                                         fontSize = 12.sp,
@@ -858,9 +1079,11 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                             }
 
                             if (autoAddEnabled) {
-                                Row(
+                                FlowRow(
                                     modifier = Modifier.fillMaxWidth(),
-                                    horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                    verticalArrangement = Arrangement.spacedBy(8.dp),
+                                    maxItemsInEachRow = if (isCompact) 1 else 2
                                 ) {
                                     OutlinedTextField(
                                         value = autoAddMaxLecture,
@@ -871,7 +1094,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                         label = { Text("Max Lecture No.", color = Color.Gray, fontSize = 11.sp) },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
-                                        modifier = Modifier.weight(1f),
+                                        modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                         colors = TextFieldDefaults.colors(
                                             focusedContainerColor = CosmicSurfaceVariant,
                                             unfocusedContainerColor = CosmicSurfaceVariant,
@@ -887,7 +1110,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                         },
                                         label = { Text("End Date (YYYY-MM-DD)", color = Color.Gray, fontSize = 11.sp) },
                                         singleLine = true,
-                                        modifier = Modifier.weight(1f),
+                                        modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                         colors = TextFieldDefaults.colors(
                                             focusedContainerColor = CosmicSurfaceVariant,
                                             unfocusedContainerColor = CosmicSurfaceVariant,
@@ -1323,6 +1546,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
 }
 
 // --- SUBCOMPONENT: ASPIRATIONS CARD ---
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun AspirationsCard(
     aspirations: List<DailyAspiration>,
@@ -1335,6 +1559,7 @@ fun AspirationsCard(
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
     var newAspText by remember { mutableStateOf("") }
+    val isCompact = LocalConfiguration.current.screenWidthDp < 360
 
     Card(
         modifier = Modifier.fillMaxWidth(),
@@ -1342,12 +1567,13 @@ fun AspirationsCard(
         border = BorderStroke(1.dp, CosmicBorder)
     ) {
         Column(modifier = Modifier.padding(16.dp)) {
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                maxItemsInEachRow = if (isCompact) 1 else 2
             ) {
-                Column {
+                Column(modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f)) {
                     Text(
                         text = "AAJ SE AKANSHA (Aspirations)",
                         fontSize = 11.sp,
@@ -1372,17 +1598,18 @@ fun AspirationsCard(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                maxItemsInEachRow = if (isCompact) 1 else 2
             ) {
                 OutlinedTextField(
                     value = newAspText,
                     onValueChange = { newAspText = it },
                     placeholder = { Text("E.g. Study Electrostatics DPP today...", fontSize = 12.sp, color = Color.Gray) },
                     singleLine = true,
-                    modifier = Modifier.weight(1f),
+                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = CosmicSurfaceVariant,
                         unfocusedContainerColor = CosmicSurfaceVariant,
@@ -1401,7 +1628,8 @@ fun AspirationsCard(
                     },
                     shape = RoundedCornerShape(8.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = CosmicPrimary),
-                    contentPadding = PaddingValues(horizontal = 14.dp)
+                    contentPadding = PaddingValues(horizontal = 14.dp),
+                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier
                 ) {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add", tint = Color.White)
                 }
@@ -1462,6 +1690,7 @@ fun AspirationsCard(
 }
 
 // --- SUBCOMPONENT: TARGET PROGRESS CARD ---
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun TargetCard(
     target: DailyTarget,
@@ -1473,6 +1702,7 @@ fun TargetCard(
     val CosmicSurface = MaterialTheme.colorScheme.surface
     val CosmicBorder = MaterialTheme.colorScheme.outline
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+    val isCompact = LocalConfiguration.current.screenWidthDp < 360
 
     val subjectColor = when (target.subject) {
         "Physics" -> ColorPhysics
@@ -1512,10 +1742,11 @@ fun TargetCard(
             ) {
                 Column(modifier = Modifier.weight(1f)) {
                     // Header Tags
-                    Row(
-                        verticalAlignment = Alignment.CenterVertically,
+                    FlowRow(
+                        verticalArrangement = Arrangement.spacedBy(6.dp),
                         horizontalArrangement = Arrangement.spacedBy(6.dp),
-                        modifier = Modifier.fillMaxWidth()
+                        modifier = Modifier.fillMaxWidth(),
+                        maxItemsInEachRow = if (isCompact) 1 else 2
                     ) {
                         Box(
                             modifier = Modifier
@@ -1565,9 +1796,10 @@ fun TargetCard(
                     // Detailed Sub-items: Chapter & Lecture tags
                     if (!target.chapter.isNullOrEmpty() || !target.lectureNumber.isNullOrEmpty()) {
                         Spacer(modifier = Modifier.height(6.dp))
-                        Row(
+                        FlowRow(
                             horizontalArrangement = Arrangement.spacedBy(6.dp),
-                            verticalAlignment = Alignment.CenterVertically
+                            verticalArrangement = Arrangement.spacedBy(6.dp),
+                            maxItemsInEachRow = if (isCompact) 1 else 2
                         ) {
                             if (!target.chapter.isNullOrEmpty()) {
                                 Row(
@@ -1644,10 +1876,11 @@ fun TargetCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Progress bar and numbers
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
+                verticalArrangement = Arrangement.spacedBy(4.dp),
+                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                maxItemsInEachRow = if (isCompact) 1 else 2
             ) {
                 Text(
                     text = "Logged: ${totalLoggedMin}m ${totalLoggedSecondsLeft}s / ${target.durationProposed}m",
@@ -1679,13 +1912,15 @@ fun TargetCard(
             // DPP questions indicators if available
             if (target.dppQuestionsCount != null) {
                 Spacer(modifier = Modifier.height(8.dp))
-                Row(
+                FlowRow(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clip(RoundedCornerShape(6.dp))
                         .background(CosmicSurfaceVariant)
                         .padding(horizontal = 8.dp, vertical = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceBetween
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalArrangement = Arrangement.spacedBy(4.dp),
+                    maxItemsInEachRow = if (isCompact) 1 else 2
                 ) {
                     Text(
                         text = "DPP Sets: ${target.dppQuestionsCount} Qs",
@@ -1705,72 +1940,140 @@ fun TargetCard(
             Spacer(modifier = Modifier.height(12.dp))
 
             // Quick Actions bottom toolbar on card
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
-                    // Manual study override
-                    IconButton(
-                        onClick = { showManualMinsDialog = true },
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(CosmicSurfaceVariant)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.EditCalendar,
-                            contentDescription = "Manual study override",
-                            tint = Color.White,
-                            modifier = Modifier.size(16.dp)
-                        )
+            if (isCompact) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        // Manual study override
+                        IconButton(
+                            onClick = { showManualMinsDialog = true },
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(CosmicSurfaceVariant)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.EditCalendar,
+                                contentDescription = "Manual study override",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        // Delete target
+                        IconButton(
+                            onClick = { showDeleteConfirmDialog = true },
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(CosmicSurfaceVariant)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.DeleteForever,
+                                contentDescription = "Delete target",
+                                tint = Color(0xFFEF4444),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
 
-                    // Delete target
-                    IconButton(
-                        onClick = { showDeleteConfirmDialog = true },
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(CosmicSurfaceVariant)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.DeleteForever,
-                            contentDescription = "Delete target",
-                            tint = Color(0xFFEF4444),
-                            modifier = Modifier.size(16.dp)
+                    if (!isFullComplete) {
+                        Button(
+                            onClick = onPlay,
+                            colors = ButtonDefaults.buttonColors(containerColor = CosmicSecondary),
+                            shape = RoundedCornerShape(16.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = "Start",
+                                tint = Color.White,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Play focus", fontSize = 11.sp, color = Color.White)
+                        }
+                    } else {
+                        Text(
+                            text = "RESOLVED",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = CosmicAccentCheck,
+                            fontFamily = FontFamily.Monospace,
+                            letterSpacing = 1.sp
                         )
                     }
                 }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                        // Manual study override
+                        IconButton(
+                            onClick = { showManualMinsDialog = true },
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(CosmicSurfaceVariant)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.EditCalendar,
+                                contentDescription = "Manual study override",
+                                tint = Color.White,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
 
-                // Play Focus Timer shortcut
-                if (!isFullComplete) {
-                    Button(
-                        onClick = onPlay,
-                        colors = ButtonDefaults.buttonColors(containerColor = CosmicSecondary),
-                        shape = RoundedCornerShape(16.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
-                        modifier = Modifier.height(30.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "Start",
-                            tint = Color.White,
-                            modifier = Modifier.size(14.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
-                        Text("Play focus", fontSize = 11.sp, color = Color.White)
+                        // Delete target
+                        IconButton(
+                            onClick = { showDeleteConfirmDialog = true },
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(CosmicSurfaceVariant)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.DeleteForever,
+                                contentDescription = "Delete target",
+                                tint = Color(0xFFEF4444),
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
-                } else {
-                    Text(
-                        text = "RESOLVED",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = CosmicAccentCheck,
-                        fontFamily = FontFamily.Monospace,
-                        letterSpacing = 1.sp
-                    )
+
+                    // Play Focus Timer shortcut
+                    if (!isFullComplete) {
+                        Button(
+                            onClick = onPlay,
+                            colors = ButtonDefaults.buttonColors(containerColor = CosmicSecondary),
+                            shape = RoundedCornerShape(16.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = "Start",
+                                tint = Color.White,
+                                modifier = Modifier.size(14.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text("Play focus", fontSize = 11.sp, color = Color.White)
+                        }
+                    } else {
+                        Text(
+                            text = "RESOLVED",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = CosmicAccentCheck,
+                            fontFamily = FontFamily.Monospace,
+                            letterSpacing = 1.sp
+                        )
+                    }
                 }
             }
         }

@@ -8,6 +8,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -28,6 +29,7 @@ import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -43,7 +45,7 @@ import com.example.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun DPPScreen(viewModel: StudyViewModel) {
     val CosmicSurface = MaterialTheme.colorScheme.surface
@@ -65,6 +67,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
     var notes by remember { mutableStateOf("") }
 
     val subjectsList = listOf("Physics", "Chemistry", "Maths", "Biology", "General")
+    val isCompact = LocalConfiguration.current.screenWidthDp < 360
 
     val onSelectPreset = { preset: DppPreset ->
         title = preset.title
@@ -357,9 +360,11 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 }
                             }
 
-                            Row(
+                            FlowRow(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                maxItemsInEachRow = if (isCompact) 1 else 3
                             ) {
                                 OutlinedTextField(
                                     value = totalQuestions,
@@ -367,7 +372,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                     label = { Text("Total Qs", color = Color.Gray) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
-                                    modifier = Modifier.weight(1f),
+                                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = CosmicSurfaceVariant,
                                         unfocusedContainerColor = CosmicSurfaceVariant,
@@ -382,7 +387,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                     label = { Text("Attempted", color = Color.Gray) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
-                                    modifier = Modifier.weight(1f),
+                                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = CosmicSurfaceVariant,
                                         unfocusedContainerColor = CosmicSurfaceVariant,
@@ -397,7 +402,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                     label = { Text("Correct", color = Color.Gray) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
-                                    modifier = Modifier.weight(1f),
+                                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = CosmicSurfaceVariant,
                                         unfocusedContainerColor = CosmicSurfaceVariant,
@@ -475,13 +480,15 @@ fun DPPScreen(viewModel: StudyViewModel) {
 
         // --- TOP LEVEL ACCUMULATED SUMMARY METRIC CARDS ---
         item {
-            Row(
+            FlowRow(
                 modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp),
+                maxItemsInEachRow = if (isCompact) 1 else 3
             ) {
                 // Total Solved Sets
                 Card(
-                    modifier = Modifier.weight(1f),
+                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                     colors = CardDefaults.cardColors(containerColor = CosmicSurface),
                     border = BorderStroke(1.dp, CosmicBorder)
                 ) {
@@ -504,7 +511,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
 
                 // Total Questions Bank
                 Card(
-                    modifier = Modifier.weight(1.1f),
+                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                     colors = CardDefaults.cardColors(containerColor = CosmicSurface),
                     border = BorderStroke(1.dp, CosmicBorder)
                 ) {
@@ -527,7 +534,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
 
                 // Cumulative Accuracy Percentage
                 Card(
-                    modifier = Modifier.weight(1.1f),
+                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                     colors = CardDefaults.cardColors(containerColor = CosmicSurface),
                     border = BorderStroke(1.dp, CosmicBorder)
                 ) {
@@ -586,8 +593,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             OutlinedButton(
                                 onClick = { filterExp = true },
                                 shape = RoundedCornerShape(12.dp),
-                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
-                                modifier = Modifier.height(30.dp),
+                                contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                                 border = BorderStroke(1.dp, CosmicBorder)
                             ) {
                                 Text(viewModel.dppSubjectFilter, fontSize = 11.sp, color = Color.LightGray)
@@ -617,7 +623,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(180.dp),
+                                .aspectRatio(1.6f),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
@@ -634,7 +640,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         Box(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .height(180.dp)
+                                .aspectRatio(1.6f)
                         ) {
                             Canvas(
                                 modifier = Modifier
@@ -810,9 +816,11 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                             )
                                         }
                                         Spacer(modifier = Modifier.height(4.dp))
-                                        Row(
+                                        FlowRow(
                                             modifier = Modifier.fillMaxWidth(),
-                                            horizontalArrangement = Arrangement.spacedBy(16.dp)
+                                            horizontalArrangement = Arrangement.spacedBy(16.dp),
+                                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                                            maxItemsInEachRow = if (isCompact) 1 else 3
                                         ) {
                                             Text(
                                                 text = "Accuracy: ${String.format(Locale.getDefault(), "%.1f", acc)}%",
@@ -854,9 +862,14 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 Text("Mathematical Metrics Definitions", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             }
                             Spacer(modifier = Modifier.height(6.dp))
-                            Row(modifier = Modifier.fillMaxWidth()) {
+                            FlowRow(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.spacedBy(12.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                maxItemsInEachRow = if (isCompact) 1 else 2
+                            ) {
                                 Row(
-                                    modifier = Modifier.weight(1f),
+                                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(CosmicAccentCheck))
@@ -867,7 +880,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                     }
                                 }
                                 Row(
-                                    modifier = Modifier.weight(1.1f),
+                                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
                                     Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(CosmicSecondary))
