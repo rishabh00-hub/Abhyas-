@@ -223,7 +223,7 @@ fun MainAppContainer(viewModel: StudyViewModel) {
                                     }
                                 )
                             }
-                            .border(BorderStroke(1.5.dp, CosmicPrimary), CircleShape)
+                            .border(BorderStroke(1.5.dp, MaterialTheme.colorScheme.primary), CircleShape)
                             .clickable {
                                 isFloatingMode = false
                                 swipeOffsetX = 0f
@@ -242,7 +242,7 @@ fun MainAppContainer(viewModel: StudyViewModel) {
                             Icon(
                                 imageVector = Icons.Default.Widgets,
                                 contentDescription = "Restore page switching buttons",
-                                tint = CosmicSecondary,
+                                tint = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.size(26.dp)
                             )
                         }

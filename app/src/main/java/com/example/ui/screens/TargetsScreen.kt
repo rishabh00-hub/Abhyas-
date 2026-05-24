@@ -171,9 +171,9 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     .size(56.dp)
                                     .clip(CircleShape)
                                     .background(
-                                        Brush.linearGradient(listOf(CosmicPrimary, CosmicSecondary))
+                                        Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary))
                                     )
-                                    .border(BorderStroke(2.dp, Color.White.copy(alpha = 0.4f)), CircleShape),
+                                    .border(BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)), CircleShape),
                                 contentAlignment = Alignment.Center
                             ) {
                                 val initials = viewModel.userName.split(" ")
@@ -184,7 +184,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     text = initials.ifEmpty { "A" },
                                     fontSize = 20.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = Color.White
+                                    color = MaterialTheme.colorScheme.onSurface
                                 )
                             }
 
@@ -255,7 +255,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 Icon(
                                     imageVector = if (viewModel.isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
                                     contentDescription = "Toggle Theme",
-                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    tint = MaterialTheme.colorScheme.onSecondary,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -270,7 +270,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 Icon(
                                     imageVector = Icons.Default.Edit,
                                     contentDescription = "Edit Profile",
-                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    tint = MaterialTheme.colorScheme.onSecondary,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -289,9 +289,9 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 .size(56.dp)
                                 .clip(CircleShape)
                                 .background(
-                                    Brush.linearGradient(listOf(CosmicPrimary, CosmicSecondary))
+                                    Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary))
                                 )
-                                .border(BorderStroke(2.dp, Color.White.copy(alpha = 0.4f)), CircleShape),
+                                .border(BorderStroke(2.dp, MaterialTheme.colorScheme.onSurface.copy(alpha = 0.4f)), CircleShape),
                             contentAlignment = Alignment.Center
                         ) {
                             val initials = viewModel.userName.split(" ")
@@ -302,7 +302,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 text = initials.ifEmpty { "A" },
                                 fontSize = 20.sp,
                                 fontWeight = FontWeight.Black,
-                                color = Color.White
+                                color = MaterialTheme.colorScheme.onSurface
                             )
                         }
 
@@ -370,7 +370,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 Icon(
                                     imageVector = if (viewModel.isDarkTheme) Icons.Default.LightMode else Icons.Default.DarkMode,
                                     contentDescription = "Toggle Theme",
-                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    tint = MaterialTheme.colorScheme.onSecondary,
                                     modifier = Modifier.size(18.dp)
                                 )
                             }
@@ -385,7 +385,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 Icon(
                                     imageVector = Icons.Default.Edit,
                                     contentDescription = "Edit Profile",
-                                    tint = MaterialTheme.colorScheme.onSurface,
+                                    tint = MaterialTheme.colorScheme.onSecondary,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -424,7 +424,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 Icon(
                                     imageVector = Icons.Default.DoneAll,
                                     contentDescription = "Progress Tracker",
-                                    tint = CosmicSecondary,
+                                    tint = MaterialTheme.colorScheme.secondary,
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Text(
@@ -461,7 +461,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     .fillMaxWidth()
                                     .height(8.dp)
                                     .clip(RoundedCornerShape(4.dp)),
-                                color = if (todayPercent == 100) CosmicAccentCheck else CosmicSecondary,
+                                color = if (todayPercent == 100) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
                                 trackColor = CosmicSurfaceVariant
                             )
                         }
@@ -471,8 +471,8 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
-                                    if (todayPercent == 100) CosmicAccentCheck.copy(alpha = 0.15f)
-                                    else CosmicSecondary.copy(alpha = 0.15f)
+                                    if (todayPercent == 100) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f)
+                                    else MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
                                 )
                                 .padding(vertical = 8.dp),
                             contentAlignment = Alignment.Center
@@ -482,7 +482,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     text = "$todayPercent%",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = if (todayPercent == 100) CosmicAccentCheck else CosmicSecondary
+                                    color = if (todayPercent == 100) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary
                                 )
                                 Text(
                                     text = "Completed",
@@ -508,7 +508,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 Icon(
                                     imageVector = Icons.Default.DoneAll,
                                     contentDescription = "Progress Tracker",
-                                    tint = CosmicSecondary,
+                                    tint = MaterialTheme.colorScheme.secondary,
                                     modifier = Modifier.size(18.dp)
                                 )
                                 Text(
@@ -545,7 +545,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     .fillMaxWidth()
                                     .height(8.dp)
                                     .clip(RoundedCornerShape(4.dp)),
-                                color = if (todayPercent == 100) CosmicAccentCheck else CosmicSecondary,
+                                color = if (todayPercent == 100) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
                                 trackColor = CosmicSurfaceVariant
                             )
                         }
@@ -557,8 +557,8 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 .size(56.dp)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
-                                    if (todayPercent == 100) CosmicAccentCheck.copy(alpha = 0.15f)
-                                    else CosmicSecondary.copy(alpha = 0.15f)
+                                    if (todayPercent == 100) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f)
+                                    else MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
                                 ),
                             contentAlignment = Alignment.Center
                         ) {
@@ -567,7 +567,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     text = "$todayPercent%",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = if (todayPercent == 100) CosmicAccentCheck else CosmicSecondary
+                                    color = if (todayPercent == 100) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary
                                 )
                                 Text(
                                     text = "Completed",
@@ -589,7 +589,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                     text = "Abhyas Target Planner",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = CosmicPrimary,
+                    color = MaterialTheme.colorScheme.primary,
                     fontFamily = FontFamily.SansSerif,
                     letterSpacing = 1.sp
                 )
@@ -622,7 +622,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                             Icon(
                                 imageVector = Icons.Default.OfflineBolt,
                                 contentDescription = "Presets",
-                                tint = CosmicSecondary,
+                                tint = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -630,7 +630,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 text = "QUICK STUDY PRESETS",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = CosmicSecondary,
+                                color = MaterialTheme.colorScheme.secondary,
                                 letterSpacing = 1.sp
                             )
                         }
@@ -639,7 +639,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                             text = "+ Add Preset",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = CosmicAccentCheck,
+                            color = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier
                                 .clickable { showAddPresetDialog = true }
                                 .padding(4.dp)
@@ -652,7 +652,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                         Text(
                             text = "No presets configured. Click '+ Add Preset' to create custom subjects.",
                             fontSize = 11.sp,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(vertical = 4.dp)
                         )
                     } else {
@@ -662,12 +662,12 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                         ) {
                             items(viewModel.targetTemplates, key = { it.id }) { template ->
                                 val subColor = when (template.subject) {
-                                    "Physics" -> ColorPhysics
-                                    "Chemistry" -> ColorChemistry
-                                    "Maths" -> ColorMaths
-                                    "Biology" -> ColorBiology
-                                    "General" -> ColorGeneral
-                                    else -> ColorOther
+                                    "Physics" -> MaterialTheme.colorScheme.primary
+                                    "Chemistry" -> MaterialTheme.colorScheme.secondary
+                                    "Maths" -> MaterialTheme.colorScheme.tertiary
+                                    "Biology" -> MaterialTheme.colorScheme.primary
+                                    "General" -> MaterialTheme.colorScheme.secondary
+                                    else -> MaterialTheme.colorScheme.onSurfaceVariant
                                 }
 
                                 Row(
@@ -708,7 +708,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     Icon(
                                         imageVector = Icons.Default.Close,
                                         contentDescription = "Delete preset",
-                                        tint = Color.Gray,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier
                                             .size(14.dp)
                                             .clickable { viewModel.deleteTemplate(template.id) }
@@ -746,12 +746,12 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                 ).forEach { (key, label) ->
                     val selected = activeFilter == key
                     val bgColors = if (selected) {
-                        Brush.linearGradient(listOf(CosmicPrimary, CosmicSecondary))
+                        Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary))
                     } else {
                         Brush.linearGradient(listOf(CosmicSurfaceVariant, CosmicSurfaceVariant))
                     }
                     val borderStroke = if (selected) {
-                        BorderStroke(1.dp, CosmicPrimary)
+                        BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
                     } else {
                         BorderStroke(1.dp, CosmicBorder)
                     }
@@ -768,7 +768,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                     ) {
                         Text(
                             text = label,
-                            color = if (selected) Color.White else Color(0xFF94A3B8),
+                            color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                             fontSize = 12.sp,
                             fontWeight = FontWeight.Bold
                         )
@@ -800,7 +800,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                             Icon(
                                 imageVector = Icons.Default.AddCircle,
                                 contentDescription = "Add",
-                                tint = CosmicSecondary,
+                                tint = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -814,7 +814,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                         Icon(
                             imageVector = if (viewModel.isTargetFormExpanded) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = "Expand",
-                            tint = Color.Gray
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
@@ -832,8 +832,8 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                             OutlinedTextField(
                                 value = title,
                                 onValueChange = { title = it },
-                                label = { Text("Task/Lecture Title", color = Color.Gray) },
-                                placeholder = { Text("E.g., Complete Lecture 12 Electrostatics", color = Color.DarkGray) },
+                                label = { Text("Task/Lecture Title", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                placeholder = { Text("E.g., Complete Lecture 12 Electrostatics", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = true,
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -843,7 +843,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     unfocusedContainerColor = CosmicSurfaceVariant,
                                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
                                     unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    focusedIndicatorColor = CosmicPrimary,
+                                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                                     unfocusedIndicatorColor = CosmicBorder
                                 )
                             )
@@ -932,8 +932,8 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 OutlinedTextField(
                                     value = chapterText,
                                     onValueChange = { chapterText = it },
-                                    label = { Text("Chapter", color = Color.Gray, fontSize = 11.sp) },
-                                    placeholder = { Text("Electrostatics", color = Color.DarkGray, fontSize = 11.sp) },
+                                    label = { Text("Chapter", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp) },
+                                    placeholder = { Text("Electrostatics", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp) },
                                     singleLine = true,
                                     modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     colors = TextFieldDefaults.colors(
@@ -947,8 +947,8 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 OutlinedTextField(
                                     value = lectureNumberText,
                                     onValueChange = { lectureNumberText = it },
-                                    label = { Text("Lecture/DPP Suffix", color = Color.Gray, fontSize = 11.sp) },
-                                    placeholder = { Text("Lec 04 or DPP 03", color = Color.DarkGray, fontSize = 11.sp) },
+                                    label = { Text("Lecture/DPP Suffix", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp) },
+                                    placeholder = { Text("Lec 04 or DPP 03", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp) },
                                     singleLine = true,
                                     modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     colors = TextFieldDefaults.colors(
@@ -969,7 +969,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 OutlinedTextField(
                                     value = durationMinutes,
                                     onValueChange = { durationMinutes = it },
-                                    label = { Text("Proposed (Min)", color = Color.Gray, fontSize = 11.sp) },
+                                    label = { Text("Proposed (Min)", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
                                     modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
@@ -984,8 +984,8 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 OutlinedTextField(
                                     value = batchText,
                                     onValueChange = { batchText = it },
-                                    label = { Text("Batch / Source", color = Color.Gray, fontSize = 11.sp) },
-                                    placeholder = { Text(viewModel.userBatch, color = Color.DarkGray, fontSize = 11.sp) },
+                                    label = { Text("Batch / Source", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp) },
+                                    placeholder = { Text(viewModel.userBatch, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp) },
                                     singleLine = true,
                                     modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     colors = TextFieldDefaults.colors(
@@ -1007,8 +1007,8 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                         targetDateText = it
                                         dateError = null
                                     },
-                                    label = { Text("Target Date (YYYY-MM-DD)", color = Color.Gray) },
-                                    placeholder = { Text(todayStr, color = Color.DarkGray) },
+                                    label = { Text("Target Date (YYYY-MM-DD)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                    placeholder = { Text(todayStr, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     singleLine = true,
                                     modifier = Modifier.weight(1f),
                                     isError = dateError != null,
@@ -1033,7 +1033,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 OutlinedTextField(
                                     value = questionsCount,
                                     onValueChange = { questionsCount = it },
-                                    label = { Text("Questions Count", color = Color.Gray) },
+                                    label = { Text("Questions Count", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
                                     modifier = Modifier.fillMaxWidth(),
@@ -1091,7 +1091,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                             autoAddMaxLecture = it
                                             autoAddError = null
                                         },
-                                        label = { Text("Max Lecture No.", color = Color.Gray, fontSize = 11.sp) },
+                                        label = { Text("Max Lecture No.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp) },
                                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                         singleLine = true,
                                         modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
@@ -1108,7 +1108,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                             autoAddEndDate = it
                                             autoAddError = null
                                         },
-                                        label = { Text("End Date (YYYY-MM-DD)", color = Color.Gray, fontSize = 11.sp) },
+                                        label = { Text("End Date (YYYY-MM-DD)", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp) },
                                         singleLine = true,
                                         modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                         colors = TextFieldDefaults.colors(
@@ -1242,9 +1242,9 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("save_target_button"),
-                                colors = ButtonDefaults.buttonColors(containerColor = CosmicPrimary)
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                             ) {
-                                Text("Schedule Target", fontWeight = FontWeight.Bold, color = Color.White)
+                                Text("Schedule Target", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
                             }
                         }
                     }
@@ -1265,19 +1265,19 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                     Icon(
                         imageVector = Icons.Outlined.ContentPaste,
                         contentDescription = "No Targets",
-                        tint = Color(0xFF475569),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(64.dp)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "Koi targets scheduled nahi hain.",
-                        color = Color(0xFF64748B),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 15.sp,
                         fontWeight = FontWeight.Medium
                     )
                     Text(
                         text = "Preset template select karein ya naya target pre-schedule karein!",
-                        color = Color(0xFF475569),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 13.sp
                     )
                 }
@@ -1311,63 +1311,63 @@ fun TargetsScreen(viewModel: StudyViewModel) {
 
         AlertDialog(
             onDismissRequest = { showProfileEditDialog = false },
-            title = { Text("Update Your Profile details", color = Color.White) },
+            title = { Text("Update Your Profile details", color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Customize your platform, batch and goal details.", color = Color.LightGray, fontSize = 13.sp)
+                    Text("Customize your platform, batch and goal details.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
                     
                     OutlinedTextField(
                         value = editNameText,
                         onValueChange = { editNameText = it },
-                        label = { Text("Aspirant Name", color = Color.Gray) },
+                        label = { Text("Aspirant Name", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = CosmicSurfaceVariant,
                             unfocusedContainerColor = CosmicSurfaceVariant,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
 
                     OutlinedTextField(
                         value = editPrepText,
                         onValueChange = { editPrepText = it },
-                        label = { Text("Exam Preparing For", color = Color.Gray) },
+                        label = { Text("Exam Preparing For", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = CosmicSurfaceVariant,
                             unfocusedContainerColor = CosmicSurfaceVariant,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
 
                     OutlinedTextField(
                         value = editPlatformText,
                         onValueChange = { editPlatformText = it },
-                        label = { Text("Online Platform (e.g. PW)", color = Color.Gray) },
+                        label = { Text("Online Platform (e.g. PW)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = CosmicSurfaceVariant,
                             unfocusedContainerColor = CosmicSurfaceVariant,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
 
                     OutlinedTextField(
                         value = editBatchText,
                         onValueChange = { editBatchText = it },
-                        label = { Text("Batch Name (e.g. Lakshya)", color = Color.Gray) },
+                        label = { Text("Batch Name (e.g. Lakshya)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = CosmicSurfaceVariant,
                             unfocusedContainerColor = CosmicSurfaceVariant,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }
@@ -1383,19 +1383,19 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                         )
                         showProfileEditDialog = false
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = CosmicAccentCheck)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                 ) {
-                    Text("Save Changes", color = Color.White)
+                    Text("Save Changes", color = MaterialTheme.colorScheme.onTertiary)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showProfileEditDialog = false }) {
-                    Text("Cancel", color = Color.Gray)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             containerColor = CosmicSurface,
-            textContentColor = Color.LightGray,
-            titleContentColor = Color.White
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            titleContentColor = MaterialTheme.colorScheme.onSurface
         )
     }
 
@@ -1409,13 +1409,13 @@ fun TargetsScreen(viewModel: StudyViewModel) {
 
         AlertDialog(
             onDismissRequest = { showAddPresetDialog = false },
-            title = { Text("Add Quick Study Preset", color = Color.White) },
+            title = { Text("Add Quick Study Preset", color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
                     modifier = Modifier.fillMaxWidth()
                 ) {
-                    Text("Define templates for subjects you study regularly to avoid repeating details later.", color = Color.LightGray, fontSize = 13.sp)
+                    Text("Define templates for subjects you study regularly to avoid repeating details later.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
 
                     // Subject option dropdown
                     var subDialogExp by remember { mutableStateOf(false) }
@@ -1423,7 +1423,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                         OutlinedButton(
                             onClick = { subDialogExp = true },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                             border = BorderStroke(1.dp, CosmicBorder)
                         ) {
                             Text("Subject: $presetSubject")
@@ -1435,7 +1435,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                         ) {
                             subjectsList.forEach { s ->
                                 DropdownMenuItem(
-                                    text = { Text(s, color = Color.White) },
+                                    text = { Text(s, color = MaterialTheme.colorScheme.onSurface) },
                                     onClick = {
                                         presetSubject = s
                                         subDialogExp = false
@@ -1451,7 +1451,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                         OutlinedButton(
                             onClick = { typeDialogExp = true },
                             modifier = Modifier.fillMaxWidth(),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                             border = BorderStroke(1.dp, CosmicBorder)
                         ) {
                             Text("Type: $presetType")
@@ -1463,7 +1463,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                         ) {
                             typesList.forEach { t ->
                                 DropdownMenuItem(
-                                    text = { Text(t, color = Color.White) },
+                                    text = { Text(t, color = MaterialTheme.colorScheme.onSurface) },
                                     onClick = {
                                         presetType = t
                                         typeDialogExp = false
@@ -1476,40 +1476,40 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                     OutlinedTextField(
                         value = presetChapter,
                         onValueChange = { presetChapter = it },
-                        label = { Text("Default Chapter (E.g. integration)", color = Color.Gray) },
+                        label = { Text("Default Chapter (E.g. integration)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = CosmicSurfaceVariant,
                             unfocusedContainerColor = CosmicSurfaceVariant,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
 
                     OutlinedTextField(
                         value = presetBatch,
                         onValueChange = { presetBatch = it },
-                        label = { Text("Batch / Teacher (E.g. Lakshya)", color = Color.Gray) },
+                        label = { Text("Batch / Teacher (E.g. Lakshya)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = CosmicSurfaceVariant,
                             unfocusedContainerColor = CosmicSurfaceVariant,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
 
                     OutlinedTextField(
                         value = presetDuration,
                         onValueChange = { presetDuration = it },
-                        label = { Text("Default Session Time (Mins)", color = Color.Gray) },
+                        label = { Text("Default Session Time (Mins)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = CosmicSurfaceVariant,
                             unfocusedContainerColor = CosmicSurfaceVariant,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }
@@ -1528,19 +1528,19 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                         )
                         showAddPresetDialog = false
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = CosmicSecondary)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
                 ) {
-                    Text("Create Preset", color = Color.White)
+                    Text("Create Preset", color = MaterialTheme.colorScheme.onSecondary)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddPresetDialog = false }) {
-                    Text("Cancel", color = Color.Gray)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             containerColor = CosmicSurface,
-            textContentColor = Color.LightGray,
-            titleContentColor = Color.White
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            titleContentColor = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -1578,20 +1578,20 @@ fun AspirationsCard(
                         text = "AAJ SE AKANSHA (Aspirations)",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = CosmicSecondary,
+                        color = MaterialTheme.colorScheme.secondary,
                         letterSpacing = 1.sp
                     )
                     Text(
                         text = "Your Focus Declarations",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.ExtraBold,
-                        color = Color.White
+                        color = MaterialTheme.colorScheme.onSurface
                     )
                 }
                 Icon(
                     imageVector = Icons.Filled.Star,
                     contentDescription = "Decoration",
-                    tint = CosmicAccentAlert,
+                    tint = MaterialTheme.colorScheme.tertiary,
                     modifier = Modifier.size(20.dp)
                 )
             }
@@ -1607,16 +1607,16 @@ fun AspirationsCard(
                 OutlinedTextField(
                     value = newAspText,
                     onValueChange = { newAspText = it },
-                    placeholder = { Text("E.g. Study Electrostatics DPP today...", fontSize = 12.sp, color = Color.Gray) },
+                    placeholder = { Text("E.g. Study Electrostatics DPP today...", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                     singleLine = true,
                     modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                     colors = TextFieldDefaults.colors(
                         focusedContainerColor = CosmicSurfaceVariant,
                         unfocusedContainerColor = CosmicSurfaceVariant,
-                        focusedTextColor = Color.White,
-                        unfocusedTextColor = Color.White,
-                        focusedIndicatorColor = CosmicPrimary,
-                        unfocusedIndicatorColor = Color.Transparent
+                        focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
+                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
+                        unfocusedIndicatorColor = MaterialTheme.colorScheme.surface.copy(alpha = 0f)
                     )
                 )
                 Button(
@@ -1627,11 +1627,11 @@ fun AspirationsCard(
                         }
                     },
                     shape = RoundedCornerShape(8.dp),
-                    colors = ButtonDefaults.buttonColors(containerColor = CosmicPrimary),
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                     contentPadding = PaddingValues(horizontal = 14.dp),
                     modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier
                 ) {
-                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add", tint = Color.White)
+                    Icon(imageVector = Icons.Default.Add, contentDescription = "Add", tint = MaterialTheme.colorScheme.onPrimary)
                 }
             }
 
@@ -1654,7 +1654,7 @@ fun AspirationsCard(
                             Icon(
                                 imageVector = if (aspiration.isCompleted) Icons.Default.CheckCircle else Icons.Outlined.Circle,
                                 contentDescription = "Toggle status",
-                                tint = if (aspiration.isCompleted) CosmicAccentCheck else Color.Gray,
+                                tint = if (aspiration.isCompleted) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(20.dp)
                             )
                         }
@@ -1664,7 +1664,7 @@ fun AspirationsCard(
                         Text(
                             text = aspiration.text,
                             fontSize = 13.sp,
-                            color = if (aspiration.isCompleted) Color.Gray else MaterialTheme.colorScheme.onSurface,
+                            color = if (aspiration.isCompleted) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                             textDecoration = if (aspiration.isCompleted) TextDecoration.LineThrough else null,
                             modifier = Modifier.weight(1f),
                             maxLines = 2,
@@ -1678,7 +1678,7 @@ fun AspirationsCard(
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Delete aspiration",
-                                tint = Color.Gray,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -1705,12 +1705,12 @@ fun TargetCard(
     val isCompact = LocalConfiguration.current.screenWidthDp < 360
 
     val subjectColor = when (target.subject) {
-        "Physics" -> ColorPhysics
-        "Chemistry" -> ColorChemistry
-        "Maths" -> ColorMaths
-        "Biology" -> ColorBiology
-        "General" -> ColorGeneral
-        else -> ColorOther
+        "Physics" -> MaterialTheme.colorScheme.primary
+        "Chemistry" -> MaterialTheme.colorScheme.secondary
+        "Maths" -> MaterialTheme.colorScheme.tertiary
+        "Biology" -> MaterialTheme.colorScheme.primary
+        "General" -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
     var showManualMinsDialog by remember { mutableStateOf(false) }
@@ -1731,7 +1731,7 @@ fun TargetCard(
             .fillMaxWidth()
             .testTag("target_item_card_${target.id}"),
         colors = CardDefaults.cardColors(containerColor = CosmicSurface),
-        border = BorderStroke(1.dp, if (isFullComplete) CosmicAccentCheck else CosmicBorder)
+        border = BorderStroke(1.dp, if (isFullComplete) MaterialTheme.colorScheme.tertiary else CosmicBorder)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             // Main Top Title Area
@@ -1787,7 +1787,7 @@ fun TargetCard(
                         text = target.title,
                         style = MaterialTheme.typography.titleMedium,
                         fontWeight = FontWeight.Bold,
-                        color = if (isFullComplete) Color.Gray else MaterialTheme.colorScheme.onSurface,
+                        color = if (isFullComplete) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                         textDecoration = if (isFullComplete) TextDecoration.LineThrough else null,
                         maxLines = 2,
                         overflow = TextOverflow.Ellipsis
@@ -1807,19 +1807,19 @@ fun TargetCard(
                                     horizontalArrangement = Arrangement.spacedBy(3.dp),
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(4.dp))
-                                        .background(CosmicPrimary.copy(alpha = 0.15f))
+                                        .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f))
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.Book,
                                         contentDescription = "Chapter icon",
-                                        tint = CosmicSecondary,
+                                        tint = MaterialTheme.colorScheme.secondary,
                                         modifier = Modifier.size(10.dp)
                                     )
                                     Text(
                                         text = target.chapter,
                                         fontSize = 10.sp,
-                                        color = CosmicSecondary,
+                                        color = MaterialTheme.colorScheme.secondary,
                                         fontWeight = FontWeight.Bold,
                                         maxLines = 1,
                                         overflow = TextOverflow.Ellipsis
@@ -1833,19 +1833,19 @@ fun TargetCard(
                                     horizontalArrangement = Arrangement.spacedBy(3.dp),
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(4.dp))
-                                        .background(CosmicAccentAlert.copy(alpha = 0.15f))
+                                        .background(MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f))
                                         .padding(horizontal = 6.dp, vertical = 2.dp)
                                 ) {
                                     Icon(
                                         imageVector = Icons.Default.PlayCircleOutline,
                                         contentDescription = "Lecture Tag",
-                                        tint = CosmicAccentAlert,
+                                        tint = MaterialTheme.colorScheme.tertiary,
                                         modifier = Modifier.size(10.dp)
                                     )
                                     Text(
                                         text = target.lectureNumber,
                                         fontSize = 10.sp,
-                                        color = CosmicAccentAlert,
+                                        color = MaterialTheme.colorScheme.tertiary,
                                         fontWeight = FontWeight.Bold
                                     )
                                 }
@@ -1867,7 +1867,7 @@ fun TargetCard(
                     Icon(
                         imageVector = if (isFullComplete) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
                         contentDescription = "Status check",
-                        tint = if (isFullComplete) CosmicAccentCheck else Color.Gray,
+                        tint = if (isFullComplete) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(28.dp)
                     )
                 }
@@ -1885,14 +1885,14 @@ fun TargetCard(
                 Text(
                     text = "Logged: ${totalLoggedMin}m ${totalLoggedSecondsLeft}s / ${target.durationProposed}m",
                     fontSize = 12.sp,
-                    color = Color(0xFF94A3B8),
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                     fontFamily = FontFamily.Monospace
                 )
                 Text(
                     text = "$completedPercentage%",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isFullComplete) CosmicAccentCheck else CosmicSecondary,
+                    color = if (isFullComplete) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
                     fontFamily = FontFamily.Monospace
                 )
             }
@@ -1905,7 +1905,7 @@ fun TargetCard(
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
-                color = if (isFullComplete) CosmicAccentCheck else CosmicPrimary,
+                color = if (isFullComplete) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
                 trackColor = CosmicSurfaceVariant
             )
 
@@ -1925,12 +1925,12 @@ fun TargetCard(
                     Text(
                         text = "DPP Sets: ${target.dppQuestionsCount} Qs",
                         fontSize = 11.sp,
-                        color = Color.LightGray
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
                     Text(
                         text = "Complete your DPP scores in the DPP tab to sync accuracy analytics",
                         fontSize = 9.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -1957,7 +1957,7 @@ fun TargetCard(
                             Icon(
                                 imageVector = Icons.Default.EditCalendar,
                                 contentDescription = "Manual study override",
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onSecondary,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -1973,7 +1973,7 @@ fun TargetCard(
                             Icon(
                                 imageVector = Icons.Default.DeleteForever,
                                 contentDescription = "Delete target",
-                                tint = Color(0xFFEF4444),
+                                tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -1982,7 +1982,7 @@ fun TargetCard(
                     if (!isFullComplete) {
                         Button(
                             onClick = onPlay,
-                            colors = ButtonDefaults.buttonColors(containerColor = CosmicSecondary),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                             shape = RoundedCornerShape(16.dp),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
                             modifier = Modifier.fillMaxWidth()
@@ -1990,18 +1990,18 @@ fun TargetCard(
                             Icon(
                                 imageVector = Icons.Default.PlayArrow,
                                 contentDescription = "Start",
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onSecondary,
                                 modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Play focus", fontSize = 11.sp, color = Color.White)
+                            Text("Play focus", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSecondary)
                         }
                     } else {
                         Text(
                             text = "RESOLVED",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = CosmicAccentCheck,
+                            color = MaterialTheme.colorScheme.tertiary,
                             fontFamily = FontFamily.Monospace,
                             letterSpacing = 1.sp
                         )
@@ -2025,7 +2025,7 @@ fun TargetCard(
                             Icon(
                                 imageVector = Icons.Default.EditCalendar,
                                 contentDescription = "Manual study override",
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onSecondary,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -2041,7 +2041,7 @@ fun TargetCard(
                             Icon(
                                 imageVector = Icons.Default.DeleteForever,
                                 contentDescription = "Delete target",
-                                tint = Color(0xFFEF4444),
+                                tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -2051,25 +2051,25 @@ fun TargetCard(
                     if (!isFullComplete) {
                         Button(
                             onClick = onPlay,
-                            colors = ButtonDefaults.buttonColors(containerColor = CosmicSecondary),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                             shape = RoundedCornerShape(16.dp),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp)
                         ) {
                             Icon(
                                 imageVector = Icons.Default.PlayArrow,
                                 contentDescription = "Start",
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onSecondary,
                                 modifier = Modifier.size(14.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
-                            Text("Play focus", fontSize = 11.sp, color = Color.White)
+                            Text("Play focus", fontSize = 11.sp, color = MaterialTheme.colorScheme.onSecondary)
                         }
                     } else {
                         Text(
                             text = "RESOLVED",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = CosmicAccentCheck,
+                            color = MaterialTheme.colorScheme.tertiary,
                             fontFamily = FontFamily.Monospace,
                             letterSpacing = 1.sp
                         )
@@ -2083,10 +2083,10 @@ fun TargetCard(
     if (showManualMinsDialog) {
         AlertDialog(
             onDismissRequest = { showManualMinsDialog = false },
-            title = { Text("Log Study Time Manually", color = Color.White) },
+            title = { Text("Log Study Time Manually", color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column {
-                    Text("Overriding study seconds directly is convenient. In many minutes did you study?", color = Color.LightGray, fontSize = 14.sp)
+                    Text("Overriding study seconds directly is convenient. In many minutes did you study?", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
                         value = inputMinsText,
@@ -2097,8 +2097,8 @@ fun TargetCard(
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = CosmicSurface,
                             unfocusedContainerColor = CosmicSurface,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }
@@ -2113,73 +2113,73 @@ fun TargetCard(
                             inputMinsText = ""
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = CosmicAccentCheck)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                 ) {
-                    Text("Override Done", color = Color.White)
+                    Text("Override Done", color = MaterialTheme.colorScheme.onTertiary)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showManualMinsDialog = false }) {
-                    Text("Cancel", color = Color.Gray)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             containerColor = CosmicSurface,
-            textContentColor = Color.LightGray,
-            titleContentColor = Color.White
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            titleContentColor = MaterialTheme.colorScheme.onSurface
         )
     }
 
     if (showDeleteConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showDeleteConfirmDialog = false },
-            title = { Text("Delete target?", color = Color.White) },
-            text = { Text("This action will permanently delete the target.", color = Color.LightGray) },
+            title = { Text("Delete target?", color = MaterialTheme.colorScheme.onSurface) },
+            text = { Text("This action will permanently delete the target.", color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
                 Button(
                     onClick = {
                         onDelete()
                         showDeleteConfirmDialog = false
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFEF4444))
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
                 ) {
-                    Text("Delete", color = Color.White)
+                    Text("Delete", color = MaterialTheme.colorScheme.onError)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showDeleteConfirmDialog = false }) {
-                    Text("Cancel", color = Color.Gray)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             containerColor = CosmicSurface,
-            textContentColor = Color.LightGray,
-            titleContentColor = Color.White
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            titleContentColor = MaterialTheme.colorScheme.onSurface
         )
     }
 
     if (showUncheckConfirmDialog) {
         AlertDialog(
             onDismissRequest = { showUncheckConfirmDialog = false },
-            title = { Text("Uncheck completed target?", color = Color.White) },
-            text = { Text("This will move the target back to pending status.", color = Color.LightGray) },
+            title = { Text("Uncheck completed target?", color = MaterialTheme.colorScheme.onSurface) },
+            text = { Text("This will move the target back to pending status.", color = MaterialTheme.colorScheme.onSurfaceVariant) },
             confirmButton = {
                 Button(
                     onClick = {
                         onToggleComplete()
                         showUncheckConfirmDialog = false
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = CosmicAccentAlert)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                 ) {
-                    Text("Uncheck", color = Color.White)
+                    Text("Uncheck", color = MaterialTheme.colorScheme.onTertiary)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showUncheckConfirmDialog = false }) {
-                    Text("Cancel", color = Color.Gray)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             containerColor = CosmicSurface,
-            textContentColor = Color.LightGray,
-            titleContentColor = Color.White
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            titleContentColor = MaterialTheme.colorScheme.onSurface
         )
     }
 }

@@ -108,9 +108,14 @@ fun TimerScreen(viewModel: StudyViewModel) {
             listOf("Pomodoro", "Stopwatch").forEach { m ->
                 val selected = viewModel.timerMode == m
                 val bgBrush = if (selected) {
-                    Brush.linearGradient(listOf(CosmicPrimary, CosmicSecondary))
+                    Brush.linearGradient(listOf(MaterialTheme.colorScheme.primary, MaterialTheme.colorScheme.secondary))
                 } else {
-                    Brush.linearGradient(listOf(Color.Transparent, Color.Transparent))
+                    Brush.linearGradient(
+                        listOf(
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0f),
+                            MaterialTheme.colorScheme.surface.copy(alpha = 0f)
+                        )
+                    )
                 }
 
                 Box(
@@ -123,7 +128,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                 ) {
                     Text(
                         text = m,
-                        color = if (selected) Color.White else Color.Gray,
+                        color = if (selected) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Bold
                     )
@@ -151,7 +156,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                     Icon(
                         imageVector = if (boundTarget == null) Icons.Default.LinkOff else Icons.Default.Link,
                         contentDescription = "Binding",
-                        tint = if (boundTarget == null) Color.Gray else CosmicAccentCheck,
+                        tint = if (boundTarget == null) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.tertiary,
                         modifier = Modifier.size(20.dp)
                     )
                     Spacer(modifier = Modifier.width(10.dp))
@@ -160,7 +165,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                             text = if (viewModel.timerState != "Idle") "Active Study Target (LOCKED)" else "Bind Active Study Target",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = CosmicSecondary
+                            color = MaterialTheme.colorScheme.secondary
                         )
                         Text(
                             text = boundTarget?.title ?: "General Focus Zone (Unlinked)",
@@ -172,7 +177,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                     }
                 }
                 if (viewModel.timerState == "Idle") {
-                    Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = "Dropdown", tint = Color.Gray)
+                    Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = "Dropdown", tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
 
@@ -193,18 +198,18 @@ fun TimerScreen(viewModel: StudyViewModel) {
                 )
                 if (pendingTodayTargets.isEmpty()) {
                     DropdownMenuItem(
-                        text = { Text("No pending today's targets available.", color = Color.Gray, fontSize = 12.sp) },
+                        text = { Text("No pending today's targets available.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 12.sp) },
                         onClick = { showTargetDropdown = false },
                         enabled = false
                     )
                 } else {
                     pendingTodayTargets.forEach { t ->
                         val subIndicatorColor = when (t.subject) {
-                            "Physics" -> ColorPhysics
-                            "Chemistry" -> ColorChemistry
-                            "Maths" -> ColorMaths
-                            "Biology" -> ColorBiology
-                            else -> ColorGeneral
+                            "Physics" -> MaterialTheme.colorScheme.primary
+                            "Chemistry" -> MaterialTheme.colorScheme.secondary
+                            "Maths" -> MaterialTheme.colorScheme.tertiary
+                            "Biology" -> MaterialTheme.colorScheme.primary
+                            else -> MaterialTheme.colorScheme.secondary
                         }
                         DropdownMenuItem(
                             text = {
@@ -235,9 +240,9 @@ fun TimerScreen(viewModel: StudyViewModel) {
 
         // --- IMMERSIVE GLOWING RADIAL RING ---
         val orbitColor = when (viewModel.timerState) {
-            "Running" -> CosmicPrimary
-            "Paused" -> CosmicAccentAlert
-            "Finished" -> CosmicAccentCheck
+            "Running" -> MaterialTheme.colorScheme.primary
+            "Paused" -> MaterialTheme.colorScheme.tertiary
+            "Finished" -> MaterialTheme.colorScheme.tertiary
             else -> CosmicBorder
         }
 
@@ -304,14 +309,14 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                     else -> Icons.Default.Timer
                                 },
                                 contentDescription = "Mode indicator",
-                                tint = Color.Gray,
+                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(12.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
                             Text(
                                 text = viewModel.timerMode,
                                 fontSize = modeFontSize,
-                                color = Color.Gray,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontWeight = FontWeight.Bold
                             )
                         }
@@ -335,7 +340,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                         text = "POMODORO DURATION PRESETS",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = CosmicSecondary,
+                        color = MaterialTheme.colorScheme.secondary,
                         letterSpacing = 1.sp
                     )
 
@@ -350,10 +355,10 @@ fun TimerScreen(viewModel: StudyViewModel) {
                             OutlinedButton(
                                 onClick = { viewModel.setCustomPomodoroMinutes(minsPreset) },
                                 shape = RoundedCornerShape(12.dp),
-                                border = BorderStroke(1.dp, if (isSelected) CosmicPrimary else CosmicBorder),
+                                border = BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else CosmicBorder),
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = if (isSelected) CosmicPrimary.copy(alpha = 0.1f) else Color.Transparent,
-                                    contentColor = Color.White
+                                    containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface.copy(alpha = 0f),
+                                    contentColor = MaterialTheme.colorScheme.onSurface
                                 ),
                                 modifier = Modifier.weight(1f)
                             ) {
@@ -374,7 +379,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                             text = "ADJUST CUSTOM DURATION",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = CosmicSecondary,
+                            color = MaterialTheme.colorScheme.secondary,
                             letterSpacing = 1.sp
                         )
                         Text(
@@ -397,8 +402,8 @@ fun TimerScreen(viewModel: StudyViewModel) {
                             steps = 179,
                             modifier = Modifier.weight(1f),
                             colors = SliderDefaults.colors(
-                                thumbColor = CosmicPrimary,
-                                activeTrackColor = CosmicSecondary,
+                                thumbColor = MaterialTheme.colorScheme.primary,
+                                activeTrackColor = MaterialTheme.colorScheme.secondary,
                                 inactiveTrackColor = CosmicBorder
                             )
                         )
@@ -420,7 +425,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                     unfocusedContainerColor = CosmicSurfaceVariant,
                                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
                                     unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    focusedIndicatorColor = CosmicPrimary,
+                                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                                     unfocusedIndicatorColor = CosmicBorder
                                 ),
                                 modifier = inputModifier.testTag("pomodoro_custom_input"),
@@ -437,7 +442,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                 Icon(
                                     imageVector = Icons.Default.Edit,
                                     contentDescription = "Edit manually",
-                                    tint = Color.LightGray,
+                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                     modifier = Modifier.size(16.dp)
                                 )
                             }
@@ -464,7 +469,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                         text = "STOPWATCH ALERT MODE",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = CosmicSecondary,
+                        color = MaterialTheme.colorScheme.secondary,
                         letterSpacing = 1.sp
                     )
 
@@ -483,10 +488,10 @@ fun TimerScreen(viewModel: StudyViewModel) {
                             OutlinedButton(
                                 onClick = { viewModel.stopwatchAlertType = modeVal },
                                 shape = RoundedCornerShape(12.dp),
-                                border = BorderStroke(1.dp, if (isSelected) CosmicPrimary else CosmicBorder),
+                                border = BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else CosmicBorder),
                                 colors = ButtonDefaults.outlinedButtonColors(
-                                    containerColor = if (isSelected) CosmicPrimary.copy(alpha = 0.1f) else Color.Transparent,
-                                    contentColor = Color.White
+                                    containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface.copy(alpha = 0f),
+                                    contentColor = MaterialTheme.colorScheme.onSurface
                                 ),
                                 contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
                                 modifier = Modifier
@@ -500,7 +505,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                     Icon(
                                         imageVector = icon,
                                         contentDescription = label,
-                                        tint = if (isSelected) CosmicPrimary else Color.Gray,
+                                        tint = if (isSelected) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(16.dp)
                                     )
                                     Spacer(modifier = Modifier.height(4.dp))
@@ -520,7 +525,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                             },
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = CosmicSecondary,
+                            color = MaterialTheme.colorScheme.secondary,
                             letterSpacing = 1.sp
                         )
 
@@ -535,10 +540,10 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                 OutlinedButton(
                                     onClick = { viewModel.stopwatchAlertIntervalSeconds = secondsPreset },
                                     shape = RoundedCornerShape(12.dp),
-                                    border = BorderStroke(1.dp, if (isSelected) CosmicPrimary else CosmicBorder),
+                                    border = BorderStroke(1.dp, if (isSelected) MaterialTheme.colorScheme.primary else CosmicBorder),
                                     colors = ButtonDefaults.outlinedButtonColors(
-                                        containerColor = if (isSelected) CosmicPrimary.copy(alpha = 0.1f) else Color.Transparent,
-                                        contentColor = Color.White
+                                        containerColor = if (isSelected) MaterialTheme.colorScheme.primary.copy(alpha = 0.1f) else MaterialTheme.colorScheme.surface.copy(alpha = 0f),
+                                        contentColor = MaterialTheme.colorScheme.onSurface
                                     ),
                                     modifier = Modifier
                                         .weight(1f)
@@ -561,7 +566,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                 text = "ADJUST ALERT TIME",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = CosmicSecondary,
+                                color = MaterialTheme.colorScheme.secondary,
                                 letterSpacing = 1.sp
                             )
                             Text(
@@ -584,8 +589,8 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                 steps = 3599,
                                 modifier = Modifier.weight(1f),
                                 colors = SliderDefaults.colors(
-                                    thumbColor = CosmicPrimary,
-                                    activeTrackColor = CosmicSecondary,
+                                    thumbColor = MaterialTheme.colorScheme.primary,
+                                    activeTrackColor = MaterialTheme.colorScheme.secondary,
                                     inactiveTrackColor = CosmicBorder
                                 )
                             )
@@ -607,7 +612,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                         unfocusedContainerColor = CosmicSurfaceVariant,
                                         focusedTextColor = MaterialTheme.colorScheme.onSurface,
                                         unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                        focusedIndicatorColor = CosmicPrimary,
+                                        focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                                         unfocusedIndicatorColor = CosmicBorder
                                     ),
                                     modifier = inputModifier.testTag("stopwatch_custom_input"),
@@ -624,7 +629,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                     Icon(
                                         imageVector = Icons.Default.Edit,
                                         contentDescription = "Edit alerts manually",
-                                        tint = Color.LightGray,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier.size(16.dp)
                                     )
                                 }
@@ -649,7 +654,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
         if (viewModel.timerMode == "Stopwatch" && viewModel.timerState == "Running") {
             Button(
                 onClick = { viewModel.addStopwatchCheckpoint() },
-                colors = ButtonDefaults.buttonColors(containerColor = CosmicSecondary),
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -659,14 +664,14 @@ fun TimerScreen(viewModel: StudyViewModel) {
                 Icon(
                     imageVector = Icons.Default.Flag,
                     contentDescription = "Flag Checkpoint",
-                    tint = Color.White
+                    tint = MaterialTheme.colorScheme.onSecondary
                 )
                 Spacer(modifier = Modifier.width(8.dp))
                 Text(
                     text = "Log Question Checkpoint (Q${viewModel.stopwatchCheckpoints.size + 1})",
                     fontSize = 14.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = MaterialTheme.colorScheme.onSecondary
                 )
             }
         }
@@ -690,7 +695,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                 Icon(
                     imageVector = Icons.Default.Refresh,
                     contentDescription = "Reset",
-                    tint = if (viewModel.timerState != "Idle") Color.White else Color.DarkGray
+                    tint = if (viewModel.timerState != "Idle") MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
 
@@ -712,7 +717,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                 Icon(
                     imageVector = if (viewModel.timerState == "Running") Icons.Default.Pause else Icons.Default.PlayArrow,
                     contentDescription = "Trigger timer",
-                    tint = Color.White,
+                    tint = MaterialTheme.colorScheme.onSurface,
                     modifier = Modifier.size(32.dp)
                 )
             }
@@ -729,7 +734,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                 Icon(
                     imageVector = if (viewModel.alarmAlertsEnabled) Icons.Default.NotificationsActive else Icons.Default.NotificationsOff,
                     contentDescription = "Bell status",
-                    tint = if (viewModel.alarmAlertsEnabled) CosmicAccentAlert else Color.Gray
+                    tint = if (viewModel.alarmAlertsEnabled) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -751,14 +756,14 @@ fun TimerScreen(viewModel: StudyViewModel) {
                             text = "ACTIVE SESSION LAP SECONDS",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = CosmicSecondary,
+                            color = MaterialTheme.colorScheme.secondary,
                             letterSpacing = 1.sp
                         )
                         Text(
                             text = "${viewModel.stopwatchCheckpoints.size} Solved",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = CosmicAccentCheck
+                            color = MaterialTheme.colorScheme.tertiary
                         )
                     }
 
@@ -792,13 +797,13 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                             modifier = Modifier
                                                 .size(24.dp)
                                                 .clip(CircleShape)
-                                                .background(CosmicPrimary.copy(alpha = 0.2f))
-                                                .border(BorderStroke(1.dp, CosmicPrimary), CircleShape),
+                                                .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f))
+                                                .border(BorderStroke(1.dp, MaterialTheme.colorScheme.primary), CircleShape),
                                             contentAlignment = Alignment.Center
                                         ) {
                                             Text(
                                                 text = "${cp.questionNumber}",
-                                                color = Color.White,
+                                                color = MaterialTheme.colorScheme.onSurface,
                                                 fontSize = 10.sp,
                                                 fontWeight = FontWeight.Bold
                                             )
@@ -811,11 +816,11 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                                 value = editingText,
                                                 onValueChange = { editingText = it },
                                                 singleLine = true,
-                                                textStyle = MaterialTheme.typography.bodySmall.copy(color = Color.White),
+                                                textStyle = MaterialTheme.typography.bodySmall.copy(color = MaterialTheme.colorScheme.onSurface),
                                                 colors = TextFieldDefaults.colors(
                                                     focusedContainerColor = CosmicBackground,
                                                     unfocusedContainerColor = CosmicBackground,
-                                                    focusedIndicatorColor = CosmicPrimary,
+                                                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                                                     unfocusedIndicatorColor = CosmicBorder
                                                 ),
                                                 modifier = Modifier
@@ -826,7 +831,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                                         viewModel.updateCheckpointLabel(cp.id, editingText)
                                                         isEditingLabel = false
                                                     }) {
-                                                        Icon(Icons.Default.Check, contentDescription = "Save edit", tint = CosmicAccentCheck, modifier = Modifier.size(16.dp))
+                                                        Icon(Icons.Default.Check, contentDescription = "Save edit", tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(16.dp))
                                                     }
                                                 }
                                             )
@@ -847,7 +852,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                                 Icon(
                                                     imageVector = Icons.Default.Edit,
                                                     contentDescription = "Edit label",
-                                                    tint = Color.Gray,
+                                                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                                     modifier = Modifier.size(12.dp)
                                                 )
                                             }
@@ -863,13 +868,13 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                                 text = "Split: ${cp.splitFormatted}",
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.Bold,
-                                                color = CosmicAccentCheck,
+                                                color = MaterialTheme.colorScheme.tertiary,
                                                 fontFamily = FontFamily.Monospace
                                             )
                                             Text(
                                                 text = "Total: ${cp.timeFormatted}",
                                                 fontSize = 10.sp,
-                                                color = Color.Gray,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 fontFamily = FontFamily.Monospace
                                             )
                                         }
@@ -881,7 +886,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                             Icon(
                                                 imageVector = Icons.Default.DeleteOutline,
                                                 contentDescription = "Delete checkpoint",
-                                                tint = Color.Gray,
+                                                tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 modifier = Modifier.size(16.dp)
                                             )
                                         }
@@ -903,7 +908,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
             ) {
                 Column(modifier = Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     Row(verticalAlignment = Alignment.CenterVertically) {
-                        Icon(imageVector = Icons.Default.EditNote, contentDescription = "Notes", tint = CosmicSecondary)
+                        Icon(imageVector = Icons.Default.EditNote, contentDescription = "Notes", tint = MaterialTheme.colorScheme.secondary)
                         Spacer(modifier = Modifier.width(8.dp))
                         Text("Log Focused Session Observations", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                     }
@@ -911,7 +916,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                     OutlinedTextField(
                         value = viewModel.timerNotes,
                         onValueChange = { viewModel.timerNotes = it },
-                        placeholder = { Text("E.g., Cleared half vector questions, needs backlog revision...", fontSize = 12.sp, color = Color.Gray) },
+                        placeholder = { Text("E.g., Cleared half vector questions, needs backlog revision...", fontSize = 12.sp, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         singleLine = false,
                         maxLines = 2,
                         modifier = Modifier.fillMaxWidth().testTag("session_notes_input"),
@@ -925,14 +930,14 @@ fun TimerScreen(viewModel: StudyViewModel) {
 
                     Button(
                         onClick = { viewModel.logCurrentSession() },
-                        colors = ButtonDefaults.buttonColors(containerColor = CosmicAccentCheck),
+                        colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary),
                         modifier = Modifier
                             .fillMaxWidth()
                             .testTag("save_session_log_btn")
                     ) {
                         Icon(imageVector = Icons.Default.Save, contentDescription = "Save")
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text("Log Focused Study Period", fontWeight = FontWeight.Bold, color = Color.White)
+                        Text("Log Focused Study Period", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onTertiary)
                     }
                 }
             }

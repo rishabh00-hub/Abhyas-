@@ -117,7 +117,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                     text = "Abhyas Study Archives",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = CosmicPrimary,
+                    color = MaterialTheme.colorScheme.primary,
                     fontFamily = FontFamily.SansSerif,
                     letterSpacing = 1.sp
                 )
@@ -140,7 +140,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                         Icon(
                             imageVector = if (viewModel.isHistoryEnabled) Icons.Default.CheckCircle else Icons.Default.Cancel,
                             contentDescription = "History State Icon",
-                            tint = if (viewModel.isHistoryEnabled) CosmicSecondary else Color.Gray,
+                            tint = if (viewModel.isHistoryEnabled) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.size(18.dp)
                         )
                         Spacer(modifier = Modifier.width(8.dp))
@@ -154,7 +154,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                             Text(
                                 text = if (viewModel.isHistoryEnabled) "Completed targets are saved to study archives." else "Disabled — completed targets will not be logged.",
                                 fontSize = 10.sp,
-                                color = Color.Gray
+                                color = MaterialTheme.colorScheme.onSurfaceVariant
                             )
                         }
                     }
@@ -162,8 +162,8 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                         checked = viewModel.isHistoryEnabled,
                         onCheckedChange = { viewModel.toggleHistoryEnabled() },
                         colors = SwitchDefaults.colors(
-                            checkedThumbColor = CosmicPrimary,
-                            checkedTrackColor = CosmicPrimary.copy(alpha = 0.5f)
+                            checkedThumbColor = MaterialTheme.colorScheme.primary,
+                            checkedTrackColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
                         )
                     )
                 }
@@ -188,7 +188,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                             verticalAlignment = Alignment.CenterVertically,
                             modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f)
                         ) {
-                            Icon(imageVector = Icons.Default.Timeline, contentDescription = "", tint = CosmicSecondary)
+                            Icon(imageVector = Icons.Default.Timeline, contentDescription = "", tint = MaterialTheme.colorScheme.secondary)
                             Spacer(modifier = Modifier.width(8.dp))
                             Text("Chronicle Summary Stats", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface, fontSize = 14.sp)
                         }
@@ -196,8 +196,8 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                         // Floating minutes badge display
                         Surface(
                             shape = RoundedCornerShape(12.dp),
-                            color = CosmicPrimary.copy(alpha = 0.2f),
-                            border = BorderStroke(1.dp, CosmicPrimary),
+                            color = MaterialTheme.colorScheme.primary.copy(alpha = 0.2f),
+                            border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary),
                             modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.wrapContentWidth()
                         ) {
                             Text(
@@ -235,7 +235,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                                     fontSize = 10.sp,
                                     maxLines = 1,
                                     overflow = TextOverflow.Ellipsis,
-                                    color = Color.LightGray
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant
                                 )
                             }
                             DropdownMenu(
@@ -314,7 +314,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                             Icon(
                                 imageVector = Icons.Default.History,
                                 contentDescription = "Override done",
-                                tint = CosmicSecondary,
+                                tint = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -328,7 +328,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                         Icon(
                             imageVector = if (showManualForm) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = "Expand manual override form",
-                            tint = Color.Gray
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
@@ -346,7 +346,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                             OutlinedTextField(
                                 value = title,
                                 onValueChange = { title = it },
-                                label = { Text("Log Entry Title / Chapter studied", color = Color.Gray) },
+                                label = { Text("Log Entry Title / Chapter studied", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = true,
                                 modifier = Modifier.fillMaxWidth().testTag("add_history_title_input"),
                                 colors = TextFieldDefaults.colors(
@@ -354,7 +354,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                                     unfocusedContainerColor = CosmicSurfaceVariant,
                                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
                                     unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    focusedIndicatorColor = CosmicPrimary,
+                                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                                     unfocusedIndicatorColor = CosmicBorder
                                 )
                             )
@@ -441,7 +441,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                                 OutlinedTextField(
                                     value = durationMinutes,
                                     onValueChange = { durationMinutes = it },
-                                    label = { Text("Study Duration (Minutes Done)", color = Color.Gray) },
+                                    label = { Text("Study Duration (Minutes Done)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
                                     modifier = Modifier.weight(1f),
@@ -457,7 +457,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                             OutlinedTextField(
                                 value = notes,
                                 onValueChange = { notes = it },
-                                label = { Text("Custom Notes or DPP sheets overview", color = Color.Gray) },
+                                label = { Text("Custom Notes or DPP sheets overview", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = false,
                                 maxLines = 2,
                                 modifier = Modifier.fillMaxWidth(),
@@ -489,9 +489,9 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("submit_manual_history_btn"),
-                                colors = ButtonDefaults.buttonColors(containerColor = CosmicPrimary)
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                             ) {
-                                Text("Record Historical Period", fontWeight = FontWeight.Bold, color = Color.White)
+                                Text("Record Historical Period", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
                             }
                         }
                     }
@@ -512,7 +512,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                     Icon(
                         imageVector = Icons.Default.Timeline,
                         contentDescription = "Empty History",
-                        tint = Color(0xFF475569),
+                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(64.dp)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
@@ -524,7 +524,7 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                     )
                     Text(
                         text = "Log focused timer periods or insert override logs above!",
-                        color = Color(0xFF64748B),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 13.sp
                     )
                 }
@@ -553,12 +553,12 @@ fun SessionHistoryItemCard(
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
     val subjectLabelColor = when (session.subject) {
-        "Physics" -> ColorPhysics
-        "Chemistry" -> ColorChemistry
-        "Maths" -> ColorMaths
-        "Biology" -> ColorBiology
-        "General" -> ColorGeneral
-        else -> ColorOther
+        "Physics" -> MaterialTheme.colorScheme.primary
+        "Chemistry" -> MaterialTheme.colorScheme.secondary
+        "Maths" -> MaterialTheme.colorScheme.tertiary
+        "Biology" -> MaterialTheme.colorScheme.primary
+        "General" -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
     val totalMin = session.durationSeconds / 60
@@ -622,7 +622,7 @@ fun SessionHistoryItemCard(
                     if (!isExpanded && session.notes != null && (session.notes.contains("\n") || session.notes.length > 40)) {
                         Text(
                             text = "▼ Tap to expand notes & checkpoints",
-                            color = CosmicSecondary,
+                            color = MaterialTheme.colorScheme.secondary,
                             fontSize = 10.sp,
                             fontWeight = FontWeight.Bold,
                             modifier = Modifier.padding(top = 4.dp)
@@ -633,7 +633,7 @@ fun SessionHistoryItemCard(
                     Text(
                         text = rawDateStr,
                         fontSize = 10.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = FontFamily.Monospace
                     )
                 }
@@ -649,7 +649,7 @@ fun SessionHistoryItemCard(
                                 text = "${totalMin}m ${leftSec}s",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = CosmicSecondary,
+                                color = MaterialTheme.colorScheme.secondary,
                                 fontFamily = FontFamily.Monospace,
                                 modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                             )
@@ -659,7 +659,7 @@ fun SessionHistoryItemCard(
                             onClick = onDelete,
                             modifier = Modifier.testTag("delete_session_log_btn_${session.id}")
                         ) {
-                            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete", tint = Color.Gray, modifier = Modifier.size(16.dp))
+                            Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                         }
                     }
                 }
@@ -681,7 +681,7 @@ fun SessionHistoryItemCard(
                             text = "${totalMin}m ${leftSec}s",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = CosmicSecondary,
+                            color = MaterialTheme.colorScheme.secondary,
                             fontFamily = FontFamily.Monospace,
                             modifier = Modifier.padding(horizontal = 8.dp, vertical = 4.dp)
                         )
@@ -691,7 +691,7 @@ fun SessionHistoryItemCard(
                         onClick = onDelete,
                         modifier = Modifier.testTag("delete_session_log_btn_${session.id}")
                     ) {
-                        Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete", tint = Color.Gray, modifier = Modifier.size(16.dp))
+                        Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                     }
                 }
             }
