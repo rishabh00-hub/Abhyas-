@@ -116,7 +116,7 @@ class StudyViewModel(
     var dppPresets by mutableStateOf<List<DppPreset>>(emptyList())
         private set
 
-    var todayDate by mutableStateOf(currentDateString())
+    var todayDate by mutableStateOf<String>(currentDateString())
         private set
 
     init {
@@ -830,117 +830,118 @@ class StudyViewModel(
                 Log.e("AudioSynth", "Error interval beep", e)
             }
         }
+    }
 
-        private fun startTodayDateUpdater() {
-            viewModelScope.launch {
-                while (true) {
-                    todayDate = currentDateString()
-                    delay(calculateDelayToNextDay())
-                }
-            }
-        }
-
-        private fun currentDateString(): String {
-            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            format.isLenient = false
-            return format.format(Date())
-        }
-
-        private fun normalizeTargetDate(targetDate: String): String? {
-            val trimmed = targetDate.trim()
-            if (trimmed.isEmpty()) {
-                return todayDate
-            }
-            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            format.isLenient = false
-            return try {
-                val parsed = format.parse(trimmed) ?: return null
-                format.format(parsed)
-            } catch (e: Exception) {
-                null
-            }
-        }
-
-        private fun parseStrictDate(dateStr: String): Date? {
-            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-            format.isLenient = false
-            return try {
-                format.parse(dateStr)
-            } catch (e: Exception) {
-                null
-            }
-        }
-
-        private fun calculateDelayToNextDay(): Long {
-            val now = Calendar.getInstance()
-            val next = now.clone() as Calendar
-            next.add(Calendar.DAY_OF_YEAR, 1)
-            next.set(Calendar.HOUR_OF_DAY, 0)
-            next.set(Calendar.MINUTE, 0)
-            next.set(Calendar.SECOND, 5)
-            next.set(Calendar.MILLISECOND, 0)
-            val delayMillis = next.timeInMillis - now.timeInMillis
-            return if (delayMillis < 60_000L) 60_000L else delayMillis
-        }
-
-        private suspend fun insertAutoTargets(baseTarget: DailyTarget, config: AutoAddConfig) {
-            if (config.maxLectureNumber == null && config.endDate == null) return
-            val lectureText = baseTarget.lectureNumber ?: return
-            val lectureInfo = extractNumberInfo(lectureText) ?: return
-            val titleInfo = extractNumberInfo(baseTarget.title)
-            val baseDate = parseStrictDate(baseTarget.targetDate) ?: return
-            val endDate = config.endDate?.let { parseStrictDate(it) }
-            var nextNumber = lectureInfo.number + 1
-            val calendar = Calendar.getInstance().apply {
-                time = baseDate
-                add(Calendar.DAY_OF_YEAR, 1)
-            }
-
+    fun startTodayDateUpdater() {
+        viewModelScope.launch {
             while (true) {
-                if (config.maxLectureNumber != null && nextNumber > config.maxLectureNumber) break
-                if (endDate != null && calendar.time.after(endDate)) break
-
-                val nextLecture = formatWithNumber(lectureInfo, nextNumber)
-                val nextTitle = titleInfo?.let { formatWithNumber(it, nextNumber) } ?: baseTarget.title
-                val nextTarget = baseTarget.copy(
-                    id = UUID.randomUUID().toString(),
-                    title = nextTitle,
-                    status = "not-started",
-                    durationLogged = 0,
-                    createdAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault()).format(Date()),
-                    targetDate = currentDateFormatter().format(calendar.time),
-                    lectureNumber = nextLecture,
-                    dppSolvedCount = if (baseTarget.dppQuestionsCount != null) 0 else null,
-                    dppCorrectCount = if (baseTarget.dppQuestionsCount != null) 0 else null
-                )
-                repository.insertTarget(nextTarget)
-                nextNumber += 1
-                calendar.add(Calendar.DAY_OF_YEAR, 1)
+                todayDate = currentDateString()
+                delay(calculateDelayToNextDay())
             }
         }
+    }
 
-        private fun extractNumberInfo(text: String): NumberInfo? {
-            val match = "(\\d+)(?!.*\\d)".toRegex().find(text) ?: return null
-            val numberStr = match.value
-            val number = numberStr.toIntOrNull() ?: return null
-            val start = match.range.first
-            val end = match.range.last + 1
-            return NumberInfo(
-                prefix = text.substring(0, start),
-                number = number,
-                suffix = text.substring(end),
-                width = numberStr.length
+    fun currentDateString(): String {
+        val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        format.isLenient = false
+        return format.format(Date())
+    }
+
+    fun normalizeTargetDate(targetDate: String): String? {
+        val trimmed = targetDate.trim()
+        if (trimmed.isEmpty()) {
+            return todayDate
+        }
+        val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        format.isLenient = false
+        return try {
+            val parsed = format.parse(trimmed) ?: return null
+            format.format(parsed)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun parseStrictDate(dateStr: String): Date? {
+        val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        format.isLenient = false
+        return try {
+            format.parse(dateStr)
+        } catch (e: Exception) {
+            null
+        }
+    }
+
+    fun calculateDelayToNextDay(): Long {
+        val now = Calendar.getInstance()
+        val next = now.clone() as Calendar
+        next.add(Calendar.DAY_OF_YEAR, 1)
+        next.set(Calendar.HOUR_OF_DAY, 0)
+        next.set(Calendar.MINUTE, 0)
+        next.set(Calendar.SECOND, 5)
+        next.set(Calendar.MILLISECOND, 0)
+        val delayMillis = next.timeInMillis - now.timeInMillis
+        return if (delayMillis < 60_000L) 60_000L else delayMillis
+    }
+
+    private suspend fun insertAutoTargets(baseTarget: DailyTarget, config: AutoAddConfig) {
+        if (config.maxLectureNumber == null && config.endDate == null) return
+        val lectureText = baseTarget.lectureNumber ?: return
+        val lectureInfo = extractNumberInfo(lectureText) ?: return
+        val titleInfo = extractNumberInfo(baseTarget.title)
+        val baseDate = parseStrictDate(baseTarget.targetDate) ?: return
+        val endDate = config.endDate?.let { parseStrictDate(it) }
+        var nextNumber = lectureInfo.number + 1
+        val calendar = Calendar.getInstance().apply {
+            time = baseDate
+            add(Calendar.DAY_OF_YEAR, 1)
+        }
+
+        while (true) {
+            if (config.maxLectureNumber != null && nextNumber > config.maxLectureNumber) break
+            if (endDate != null && calendar.time.after(endDate)) break
+
+            val nextLecture = formatWithNumber(lectureInfo, nextNumber)
+            val nextTitle = titleInfo?.let { formatWithNumber(it, nextNumber) } ?: baseTarget.title
+            val nextTarget = baseTarget.copy(
+                id = UUID.randomUUID().toString(),
+                title = nextTitle,
+                status = "not-started",
+                durationLogged = 0,
+                createdAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault()).format(Date()),
+                targetDate = currentDateFormatter().format(calendar.time),
+                lectureNumber = nextLecture,
+                dppSolvedCount = if (baseTarget.dppQuestionsCount != null) 0 else null,
+                dppCorrectCount = if (baseTarget.dppQuestionsCount != null) 0 else null
             )
+            repository.insertTarget(nextTarget)
+            nextNumber += 1
+            calendar.add(Calendar.DAY_OF_YEAR, 1)
         }
+    }
 
-        private fun formatWithNumber(info: NumberInfo, number: Int): String {
-            val padded = number.toString().padStart(info.width, '0')
-            return "${info.prefix}$padded${info.suffix}"
-        }
+    private fun extractNumberInfo(text: String): NumberInfo? {
+        val match = "(\\d+)(?!.*\\d)".toRegex().find(text) ?: return null
+        val numberStr = match.value
+        val number = numberStr.toIntOrNull() ?: return null
+        val start = match.range.first
+        val end = match.range.last + 1
+        return NumberInfo(
+            prefix = text.substring(0, start),
+            number = number,
+            suffix = text.substring(end),
+            width = numberStr.length
+        )
+    }
 
-        private fun currentDateFormatter(): SimpleDateFormat {
-            return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply { isLenient = false }
-        }
+    private fun formatWithNumber(info: NumberInfo, number: Int): String {
+        val padded = number.toString().padStart(info.width, '0')
+        return "${info.prefix}$padded${info.suffix}"
+    }
+
+    private fun currentDateFormatter(): SimpleDateFormat {
+        return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply { isLenient = false }
+    }
     }
 }
 
