@@ -28,11 +28,13 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.util.lerp
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
 import kotlin.math.roundToInt
+import kotlin.math.sin
 import com.example.ui.StudyViewModel
 import com.example.ui.theme.*
 import kotlinx.coroutines.delay
@@ -119,23 +121,6 @@ fun MainAppContainer(viewModel: StudyViewModel) {
                             )
                         }
                         .padding(bottom = 32.dp, end = 32.dp)
-                        .drawBehind {
-                            val center = Offset(size.width / 2f, size.height / 2f)
-                            val glowRadius = size.minDimension * 2.0f
-                            drawCircle(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        CosmicPrimary.copy(alpha = 0.55f),
-                                        CosmicSecondary.copy(alpha = 0.30f),
-                                        Color.Transparent
-                                    ),
-                                    center = center,
-                                    radius = glowRadius
-                                ),
-                                radius = glowRadius,
-                                center = center
-                            )
-                        }
                 ) {
                     Card(
                         modifier = Modifier
@@ -249,60 +234,7 @@ fun MainAppContainer(viewModel: StudyViewModel) {
                     }
                 }
             } else {
-                // Preview FAB: appears gradually as the nav bar is dragged right.
-                // Alpha and scale are bound directly to dragProgress (0f→1f).
-                if (dragProgress > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(bottom = 32.dp, end = 32.dp)
-                            .drawBehind {
-                                val center = Offset(size.width / 2f, size.height / 2f)
-                                // Glow radius and color alpha grow with dragProgress
-                                val glowRadius = size.minDimension * (1.2f + 0.8f * dragProgress)
-                                drawCircle(
-                                    brush = Brush.radialGradient(
-                                        colors = listOf(
-                                            CosmicPrimary.copy(alpha = 0.6f * dragProgress),
-                                            CosmicSecondary.copy(alpha = 0.3f * dragProgress),
-                                            Color.Transparent
-                                        ),
-                                        center = center,
-                                        radius = glowRadius
-                                    ),
-                                    radius = glowRadius,
-                                    center = center
-                                )
-                            }
-                    ) {
-                        Card(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .alpha(dragProgress)
-                                .scale(0.5f + 0.5f * dragProgress),
-                            shape = CircleShape,
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface
-                            ),
-                            elevation = CardDefaults.cardElevation(
-                                defaultElevation = 8.dp * dragProgress
-                            )
-                        ) {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Widgets,
-                                    contentDescription = "Restore page switching buttons",
-                                    tint = CosmicSecondary,
-                                    modifier = Modifier.size(26.dp)
-                                )
-                            }
-                        }
-                    }
-                }
-                // Floating Bottom Navigation Capsule with SLIDING GESTURE
+                // Morphing Bottom Navigation Capsule with drag gesture
                 Box(
                     modifier = Modifier
                         .align(Alignment.BottomCenter)
@@ -335,7 +267,9 @@ fun MainAppContainer(viewModel: StudyViewModel) {
                 ) {
                     FloatingBottomBar(
                         activeTab = viewModel.activeTab,
-                        onTabSelected = { viewModel.switchTab(it) }
+                        onTabSelected = { viewModel.switchTab(it) },
+                        progress = dragProgress,
+                        expandedWidth = maxWidth - 32.dp
                     )
                 }
             }
@@ -347,69 +281,113 @@ fun MainAppContainer(viewModel: StudyViewModel) {
 @Composable
 fun FloatingBottomBar(
     activeTab: String,
-    onTabSelected: (String) -> Unit
+    onTabSelected: (String) -> Unit,
+    progress: Float,
+    expandedWidth: androidx.compose.ui.unit.Dp
 ) {
+    val clampedProgress = progress.coerceIn(0f, 1f)
+    val navItemsAlpha = 1f - clampedProgress
+    val fabIconAlpha = clampedProgress
+    val glowIntensity = if (clampedProgress >= 1f) 0f else sin(clampedProgress * Math.PI).toFloat().coerceAtLeast(0f)
+    val barWidth = lerp(expandedWidth, 56.dp, clampedProgress)
+    val barHeight = lerp(64.dp, 56.dp, clampedProgress)
+    val cornerRadius = lerp(32.dp, 28.dp, clampedProgress)
+
     Card(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(64.dp)
-            .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outline), RoundedCornerShape(32.dp)),
-        shape = RoundedCornerShape(32.dp),
+            .width(barWidth)
+            .height(barHeight)
+            .drawBehind {
+                if (glowIntensity > 0f) {
+                    val center = Offset(size.width / 2f, size.height / 2f)
+                    val glowRadius = size.minDimension * (1.2f + 0.8f * clampedProgress)
+                    drawCircle(
+                        brush = Brush.radialGradient(
+                            colors = listOf(
+                                CosmicPrimary.copy(alpha = 0.6f * glowIntensity),
+                                CosmicSecondary.copy(alpha = 0.3f * glowIntensity),
+                                Color.Transparent
+                            ),
+                            center = center,
+                            radius = glowRadius
+                        ),
+                        radius = glowRadius,
+                        center = center
+                    )
+                }
+            }
+            .border(
+                BorderStroke(1.dp, MaterialTheme.colorScheme.outline),
+                if (clampedProgress >= 1f) CircleShape else RoundedCornerShape(cornerRadius)
+            ),
+        shape = if (clampedProgress >= 1f) CircleShape else RoundedCornerShape(cornerRadius),
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f))
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            listOf(
-                NavigationItem("targets", "Targets", Icons.Default.TrackChanges, Icons.Outlined.TrackChanges),
-                NavigationItem("timer", "Focus", Icons.Default.Timer, Icons.Outlined.Timer),
-                NavigationItem("backlog", "Debt", Icons.Default.Warning, Icons.Outlined.Warning),
-                NavigationItem("dpp", "DPPs", Icons.Default.Assessment, Icons.Outlined.Assessment),
-                NavigationItem("history", "History", Icons.Default.History, Icons.Outlined.History)
-            ).forEach { navItem ->
-                val selected = activeTab == navItem.id
+        Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp)
+                    .alpha(navItemsAlpha),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                listOf(
+                    NavigationItem("targets", "Targets", Icons.Default.TrackChanges, Icons.Outlined.TrackChanges),
+                    NavigationItem("timer", "Focus", Icons.Default.Timer, Icons.Outlined.Timer),
+                    NavigationItem("backlog", "Debt", Icons.Default.Warning, Icons.Outlined.Warning),
+                    NavigationItem("dpp", "DPPs", Icons.Default.Assessment, Icons.Outlined.Assessment),
+                    NavigationItem("history", "History", Icons.Default.History, Icons.Outlined.History)
+                ).forEach { navItem ->
+                    val selected = activeTab == navItem.id
 
-                val itemColor = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
-                val glowBrush = if (selected) {
-                    Brush.linearGradient(
-                        listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
-                    )
-                } else null
+                    val itemColor = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
+                    val glowBrush = if (selected) {
+                        Brush.linearGradient(
+                            listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
+                        )
+                    } else null
 
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(0.85f)
-                        .clip(CircleShape)
-                        .then(if (glowBrush != null) Modifier.background(glowBrush) else Modifier)
-                        .clickable { onTabSelected(navItem.id) }
-                        .testTag("nav_tab_${navItem.id}"),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(0.85f)
+                            .clip(CircleShape)
+                            .then(if (glowBrush != null) Modifier.background(glowBrush) else Modifier)
+                            .clickable { onTabSelected(navItem.id) }
+                            .testTag("nav_tab_${navItem.id}"),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = if (selected) navItem.activeIcon else navItem.inactiveIcon,
-                            contentDescription = navItem.label,
-                            tint = itemColor,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = navItem.label,
-                            color = itemColor,
-                            fontSize = 9.sp,
-                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = if (selected) navItem.activeIcon else navItem.inactiveIcon,
+                                contentDescription = navItem.label,
+                                tint = itemColor,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = navItem.label,
+                                color = itemColor,
+                                fontSize = 9.sp,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                            )
+                        }
                     }
                 }
             }
+
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Add item",
+                tint = CosmicSecondary.copy(alpha = fabIconAlpha),
+                modifier = Modifier
+                    .size(26.dp)
+                    .alpha(fabIconAlpha)
+            )
         }
     }
 }
