@@ -942,7 +942,6 @@ class StudyViewModel(
     private fun currentDateFormatter(): SimpleDateFormat {
         return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply { isLenient = false }
     }
-    }
 }
 
 class StudyViewModelFactory(
