@@ -5,6 +5,7 @@ import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -20,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.foundation.border
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -31,7 +33,7 @@ import com.example.data.BacklogItem
 import com.example.ui.StudyViewModel
 import com.example.ui.theme.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun BacklogScreen(viewModel: StudyViewModel) {
     val CosmicSurface = MaterialTheme.colorScheme.surface
@@ -61,6 +63,7 @@ fun BacklogScreen(viewModel: StudyViewModel) {
 
     val typesList = listOf("Lecture", "DPP", "Homework", "Backlog", "Revision", "Self Study", "Test")
     val difficultyList = listOf("Easy", "Medium", "Critical")
+    val isCompact = LocalConfiguration.current.screenWidthDp < 360
 
     val pendingCount = remember(backlogs) {
         backlogs.count { it.status == "pending" }
@@ -177,13 +180,14 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                             )
 
                             // Subject select with Add Custom Subject Action Button
-                            Row(
+                            FlowRow(
                                 modifier = Modifier.fillMaxWidth(),
                                 horizontalArrangement = Arrangement.spacedBy(8.dp),
-                                verticalAlignment = Alignment.CenterVertically
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                maxItemsInEachRow = if (isCompact) 1 else 2
                             ) {
                                 var subExp by remember { mutableStateOf(false) }
-                                Box(modifier = Modifier.weight(1f)) {
+                                Box(modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f)) {
                                     OutlinedButton(
                                         onClick = { subExp = true },
                                         modifier = Modifier.fillMaxWidth(),
@@ -221,7 +225,8 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                                     shape = RoundedCornerShape(8.dp),
                                     colors = ButtonDefaults.buttonColors(containerColor = CosmicSurfaceVariant),
                                     border = BorderStroke(1.dp, CosmicBorder),
-                                    contentPadding = PaddingValues(horizontal = 10.dp)
+                                    contentPadding = PaddingValues(horizontal = 10.dp),
+                                    modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier
                                 ) {
                                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add custom subject")
                                     Spacer(modifier = Modifier.width(4.dp))
@@ -229,13 +234,15 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                                 }
                             }
 
-                            Row(
+                            FlowRow(
                                 modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.spacedBy(8.dp)
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.spacedBy(8.dp),
+                                maxItemsInEachRow = if (isCompact) 1 else 2
                             ) {
                                 // Category select
                                 var typeExp by remember { mutableStateOf(false) }
-                                Box(modifier = Modifier.weight(1f)) {
+                                Box(modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f)) {
                                     OutlinedButton(
                                         onClick = { typeExp = true },
                                         modifier = Modifier.fillMaxWidth(),
@@ -269,7 +276,7 @@ fun BacklogScreen(viewModel: StudyViewModel) {
 
                                 // Difficulty choices select
                                 var diffExp by remember { mutableStateOf(false) }
-                                Box(modifier = Modifier.weight(1f)) {
+                                Box(modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f)) {
                                     OutlinedButton(
                                         onClick = { diffExp = true },
                                         modifier = Modifier.fillMaxWidth(),
@@ -445,6 +452,7 @@ fun BacklogScreen(viewModel: StudyViewModel) {
 }
 
 // --- SUBCOMPONENT: INDIVIDUAL BACKLOG CARD ---
+@OptIn(ExperimentalLayoutApi::class)
 @Composable
 fun BacklogCard(
     item: BacklogItem,
@@ -458,6 +466,7 @@ fun BacklogCard(
 
     val isResolved = item.status == "resolved"
     val isCritical = item.difficulty == "Critical"
+    val isCompact = LocalConfiguration.current.screenWidthDp < 360
 
     val ringBorderColor = when {
         isResolved -> CosmicAccentCheck
@@ -567,76 +576,147 @@ fun BacklogCard(
             Spacer(modifier = Modifier.height(14.dp))
 
             // Immediate actions footer bar
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    // Resolve status check
-                    IconButton(
-                        onClick = onToggleResolve,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(CosmicSurfaceVariant)
-                            .testTag("resolve_backlog_btn_${item.id}")
-                    ) {
-                        Icon(
-                            imageVector = if (isResolved) Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
-                            contentDescription = "Resolve toggle",
-                            tint = if (isResolved) CosmicAccentCheck else Color.Gray,
-                            modifier = Modifier.size(16.dp)
-                        )
+            if (isCompact) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        // Resolve status check
+                        IconButton(
+                            onClick = onToggleResolve,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(CosmicSurfaceVariant)
+                                .testTag("resolve_backlog_btn_${item.id}")
+                        ) {
+                            Icon(
+                                imageVector = if (isResolved) Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
+                                contentDescription = "Resolve toggle",
+                                tint = if (isResolved) CosmicAccentCheck else Color.Gray,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
+
+                        // Delete debt
+                        IconButton(
+                            onClick = onDelete,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(CosmicSurfaceVariant)
+                                .testTag("delete_backlog_btn_${item.id}")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = CosmicAccentCritical,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
 
-                    // Delete debt
-                    IconButton(
-                        onClick = onDelete,
-                        modifier = Modifier
-                            .size(32.dp)
-                            .clip(CircleShape)
-                            .background(CosmicSurfaceVariant)
-                            .testTag("delete_backlog_btn_${item.id}")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Delete,
-                            contentDescription = "Delete",
-                            tint = CosmicAccentCritical,
-                            modifier = Modifier.size(16.dp)
+                    if (!isResolved) {
+                        Button(
+                            onClick = onConvertToTarget,
+                            colors = ButtonDefaults.buttonColors(containerColor = CosmicPrimary),
+                            shape = RoundedCornerShape(16.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .testTag("convert_backlog_btn_${item.id}")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Send,
+                                contentDescription = "Convert",
+                                tint = Color.White,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Active target me dalein", fontSize = 11.sp, color = Color.White)
+                        }
+                    } else {
+                        Text(
+                            text = "RESOLVED STUDY DEBT",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = CosmicAccentCheck,
+                            fontFamily = FontFamily.Monospace,
+                            letterSpacing = 1.sp
                         )
                     }
                 }
+            } else {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        // Resolve status check
+                        IconButton(
+                            onClick = onToggleResolve,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(CosmicSurfaceVariant)
+                                .testTag("resolve_backlog_btn_${item.id}")
+                        ) {
+                            Icon(
+                                imageVector = if (isResolved) Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
+                                contentDescription = "Resolve toggle",
+                                tint = if (isResolved) CosmicAccentCheck else Color.Gray,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
 
-                // Convert to Active Daily Target
-                if (!isResolved) {
-                    Button(
-                        onClick = onConvertToTarget,
-                        colors = ButtonDefaults.buttonColors(containerColor = CosmicPrimary),
-                        shape = RoundedCornerShape(16.dp),
-                        contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
-                        modifier = Modifier
-                            .height(30.dp)
-                            .testTag("convert_backlog_btn_${item.id}")
-                    ) {
-                        Icon(
-                            imageVector = Icons.Default.Send,
-                            contentDescription = "Convert",
-                            tint = Color.White,
-                            modifier = Modifier.size(12.dp)
-                        )
-                        Spacer(modifier = Modifier.width(6.dp))
-                        Text("Active target me dalein", fontSize = 11.sp, color = Color.White)
+                        // Delete debt
+                        IconButton(
+                            onClick = onDelete,
+                            modifier = Modifier
+                                .size(32.dp)
+                                .clip(CircleShape)
+                                .background(CosmicSurfaceVariant)
+                                .testTag("delete_backlog_btn_${item.id}")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Delete,
+                                contentDescription = "Delete",
+                                tint = CosmicAccentCritical,
+                                modifier = Modifier.size(16.dp)
+                            )
+                        }
                     }
-                } else {
-                    Text(
-                        text = "RESOLVED STUDY DEBT",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = CosmicAccentCheck,
-                        fontFamily = FontFamily.Monospace,
-                        letterSpacing = 1.sp
-                    )
+
+                    // Convert to Active Daily Target
+                    if (!isResolved) {
+                        Button(
+                            onClick = onConvertToTarget,
+                            colors = ButtonDefaults.buttonColors(containerColor = CosmicPrimary),
+                            shape = RoundedCornerShape(16.dp),
+                            contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
+                            modifier = Modifier.testTag("convert_backlog_btn_${item.id}")
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Send,
+                                contentDescription = "Convert",
+                                tint = Color.White,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text("Active target me dalein", fontSize = 11.sp, color = Color.White)
+                        }
+                    } else {
+                        Text(
+                            text = "RESOLVED STUDY DEBT",
+                            fontSize = 11.sp,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = CosmicAccentCheck,
+                            fontFamily = FontFamily.Monospace,
+                            letterSpacing = 1.sp
+                        )
+                    }
                 }
             }
         }

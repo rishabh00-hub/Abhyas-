@@ -7,6 +7,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -20,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.testTag
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
@@ -36,12 +38,13 @@ import com.example.ui.StudyViewModel
 import com.example.ui.theme.*
 import java.util.*
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
 fun TimerScreen(viewModel: StudyViewModel) {
     val CosmicSurface = MaterialTheme.colorScheme.surface
     val CosmicBorder = MaterialTheme.colorScheme.outline
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
+    val isCompact = LocalConfiguration.current.screenWidthDp < 360
 
     val targets by viewModel.allTargets.collectAsState()
     val todayStr = viewModel.todayDate
@@ -238,70 +241,80 @@ fun TimerScreen(viewModel: StudyViewModel) {
             else -> CosmicBorder
         }
 
-        Box(
-            modifier = Modifier
-                .size(240.dp)
-                .scale(if (viewModel.timerState == "Running") pulseScale else 1f),
+        BoxWithConstraints(
+            modifier = Modifier.fillMaxWidth(),
             contentAlignment = Alignment.Center
         ) {
-            // Neon shadow pulse background circles
-            Box(
-                modifier = Modifier
-                    .fillMaxSize(0.92f)
-                    .clip(CircleShape)
-                    .background(orbitColor.copy(alpha = 0.05f))
-                    .border(BorderStroke(4.dp, orbitColor.copy(alpha = 0.4f)), CircleShape)
-            )
+            val ringSize = maxWidth * if (isCompact) 0.9f else 0.75f
+            val timeFontSize = (ringSize.value * 0.18f).sp
+            val stateFontSize = (ringSize.value * 0.045f).sp
+            val modeFontSize = (ringSize.value * 0.04f).sp
 
             Box(
                 modifier = Modifier
-                    .fillMaxSize(0.82f)
-                    .clip(CircleShape)
-                    .background(CosmicSurface)
-                    .border(BorderStroke(2.dp, orbitColor), CircleShape),
+                    .size(ringSize)
+                    .scale(if (viewModel.timerState == "Running") pulseScale else 1f),
                 contentAlignment = Alignment.Center
             ) {
-                Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                    Text(
-                        text = viewModel.timerState.uppercase(Locale.getDefault()),
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = orbitColor,
-                        fontFamily = FontFamily.Monospace,
-                        letterSpacing = 1.5.sp
-                    )
-                    Spacer(modifier = Modifier.height(4.dp))
-                    Text(
-                        text = formattedTimeStr,
-                        fontSize = 44.sp,
-                        fontWeight = FontWeight.ExtraBold,
-                        color = MaterialTheme.colorScheme.onSurface,
-                        fontFamily = FontFamily.Monospace
-                    )
-                    Spacer(modifier = Modifier.height(6.dp))
-                    Row(
-                        modifier = Modifier
-                            .clip(RoundedCornerShape(8.dp))
-                            .background(CosmicSurfaceVariant)
-                            .padding(horizontal = 8.dp, vertical = 3.dp),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Icon(
-                            imageVector = when (viewModel.timerMode) {
-                                "Pomodoro" -> Icons.Default.HourglassBottom
-                                else -> Icons.Default.Timer
-                            },
-                            contentDescription = "Mode indicator",
-                            tint = Color.Gray,
-                            modifier = Modifier.size(12.dp)
-                        )
-                        Spacer(modifier = Modifier.width(4.dp))
+                // Neon shadow pulse background circles
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(0.92f)
+                        .clip(CircleShape)
+                        .background(orbitColor.copy(alpha = 0.05f))
+                        .border(BorderStroke(4.dp, orbitColor.copy(alpha = 0.4f)), CircleShape)
+                )
+
+                Box(
+                    modifier = Modifier
+                        .fillMaxSize(0.82f)
+                        .clip(CircleShape)
+                        .background(CosmicSurface)
+                        .border(BorderStroke(2.dp, orbitColor), CircleShape),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
                         Text(
-                            text = viewModel.timerMode,
-                            fontSize = 10.sp,
-                            color = Color.Gray,
-                            fontWeight = FontWeight.Bold
+                            text = viewModel.timerState.uppercase(Locale.getDefault()),
+                            fontSize = stateFontSize,
+                            fontWeight = FontWeight.Bold,
+                            color = orbitColor,
+                            fontFamily = FontFamily.Monospace,
+                            letterSpacing = 1.5.sp
                         )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = formattedTimeStr,
+                            fontSize = timeFontSize,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = MaterialTheme.colorScheme.onSurface,
+                            fontFamily = FontFamily.Monospace
+                        )
+                        Spacer(modifier = Modifier.height(6.dp))
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(8.dp))
+                                .background(CosmicSurfaceVariant)
+                                .padding(horizontal = 8.dp, vertical = 3.dp),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Icon(
+                                imageVector = when (viewModel.timerMode) {
+                                    "Pomodoro" -> Icons.Default.HourglassBottom
+                                    else -> Icons.Default.Timer
+                                },
+                                contentDescription = "Mode indicator",
+                                tint = Color.Gray,
+                                modifier = Modifier.size(12.dp)
+                            )
+                            Spacer(modifier = Modifier.width(4.dp))
+                            Text(
+                                text = viewModel.timerMode,
+                                fontSize = modeFontSize,
+                                color = Color.Gray,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
                     }
                 }
             }
@@ -326,9 +339,11 @@ fun TimerScreen(viewModel: StudyViewModel) {
                         letterSpacing = 1.sp
                     )
 
-                    Row(
+                    FlowRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        maxItemsInEachRow = if (isCompact) 2 else 4
                     ) {
                         listOf(15, 25, 45, 60).forEach { minsPreset ->
                             val isSelected = viewModel.durationProposedMinutes == minsPreset
@@ -349,10 +364,11 @@ fun TimerScreen(viewModel: StudyViewModel) {
 
                     Spacer(modifier = Modifier.height(2.dp))
 
-                    Row(
+                    FlowRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                        horizontalArrangement = Arrangement.spacedBy(12.dp),
+                        verticalArrangement = Arrangement.spacedBy(4.dp),
+                        maxItemsInEachRow = if (isCompact) 1 else 2
                     ) {
                         Text(
                             text = "ADJUST CUSTOM DURATION",
@@ -387,6 +403,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                             )
                         )
 
+                        val inputModifier = if (isCompact) Modifier.weight(0.35f) else Modifier.weight(0.25f)
                         var showTypedInput by remember { mutableStateOf(false) }
                         if (showTypedInput) {
                             OutlinedTextField(
@@ -406,10 +423,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                     focusedIndicatorColor = CosmicPrimary,
                                     unfocusedIndicatorColor = CosmicBorder
                                 ),
-                                modifier = Modifier
-                                    .width(64.dp)
-                                    .height(48.dp)
-                                    .testTag("pomodoro_custom_input"),
+                                modifier = inputModifier.testTag("pomodoro_custom_input"),
                                 shape = RoundedCornerShape(8.dp)
                             )
                         } else {
@@ -454,9 +468,11 @@ fun TimerScreen(viewModel: StudyViewModel) {
                         letterSpacing = 1.sp
                     )
 
-                    Row(
+                    FlowRow(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.spacedBy(8.dp)
+                        horizontalArrangement = Arrangement.spacedBy(8.dp),
+                        verticalArrangement = Arrangement.spacedBy(8.dp),
+                        maxItemsInEachRow = if (isCompact) 1 else 3
                     ) {
                         listOf(
                             Triple("None", "No Alert", Icons.Default.NotificationsOff),
@@ -474,7 +490,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                 ),
                                 contentPadding = PaddingValues(horizontal = 4.dp, vertical = 8.dp),
                                 modifier = Modifier
-                                    .weight(1f)
+                                    .let { if (isCompact) it.fillMaxWidth() else it.weight(1f) }
                                     .testTag("stopwatch_alert_mode_${modeVal.lowercase()}")
                             ) {
                                 Column(
@@ -508,9 +524,11 @@ fun TimerScreen(viewModel: StudyViewModel) {
                             letterSpacing = 1.sp
                         )
 
-                        Row(
+                        FlowRow(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.spacedBy(8.dp),
+                            maxItemsInEachRow = if (isCompact) 3 else 4
                         ) {
                             listOf(30, 60, 120, 180, 300, 600, 900).forEach { secondsPreset ->
                                 val isSelected = viewModel.stopwatchAlertIntervalSeconds == secondsPreset
@@ -533,10 +551,11 @@ fun TimerScreen(viewModel: StudyViewModel) {
 
                         Spacer(modifier = Modifier.height(2.dp))
 
-                        Row(
+                        FlowRow(
                             modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
+                            horizontalArrangement = Arrangement.spacedBy(12.dp),
+                            verticalArrangement = Arrangement.spacedBy(4.dp),
+                            maxItemsInEachRow = if (isCompact) 1 else 2
                         ) {
                             Text(
                                 text = "ADJUST ALERT TIME",
@@ -571,6 +590,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                 )
                             )
 
+                            val inputModifier = if (isCompact) Modifier.weight(0.35f) else Modifier.weight(0.25f)
                             var showStopwatchTypedInput by remember { mutableStateOf(false) }
                             if (showStopwatchTypedInput) {
                                 OutlinedTextField(
@@ -590,10 +610,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                         focusedIndicatorColor = CosmicPrimary,
                                         unfocusedIndicatorColor = CosmicBorder
                                     ),
-                                    modifier = Modifier
-                                        .width(64.dp)
-                                        .height(48.dp)
-                                        .testTag("stopwatch_custom_input"),
+                                    modifier = inputModifier.testTag("stopwatch_custom_input"),
                                     shape = RoundedCornerShape(8.dp)
                                 )
                             } else {
@@ -636,7 +653,6 @@ fun TimerScreen(viewModel: StudyViewModel) {
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(52.dp)
                     .testTag("record_checkpoint_main_btn"),
                 contentPadding = PaddingValues(0.dp)
             ) {
@@ -658,7 +674,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
         // --- PLAY PAUSE RESET OPERATIONS TOOLBAR ---
         Row(
             modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.Center,
+            horizontalArrangement = Arrangement.SpaceEvenly,
             verticalAlignment = Alignment.CenterVertically
         ) {
             // Reset Button
@@ -677,8 +693,6 @@ fun TimerScreen(viewModel: StudyViewModel) {
                     tint = if (viewModel.timerState != "Idle") Color.White else Color.DarkGray
                 )
             }
-
-            Spacer(modifier = Modifier.width(32.dp))
 
             // Main Play/Pause trigger Action Button
             Button(
@@ -702,8 +716,6 @@ fun TimerScreen(viewModel: StudyViewModel) {
                     modifier = Modifier.size(32.dp)
                 )
             }
-
-            Spacer(modifier = Modifier.width(32.dp))
 
             // Alarm Toggler controls
             IconButton(
@@ -807,8 +819,7 @@ fun TimerScreen(viewModel: StudyViewModel) {
                                                     unfocusedIndicatorColor = CosmicBorder
                                                 ),
                                                 modifier = Modifier
-                                                    .width(120.dp)
-                                                    .height(44.dp)
+                                                    .weight(1f)
                                                     .testTag("checkpoint_edit_${cp.id}"),
                                                 trailingIcon = {
                                                     IconButton(onClick = {
