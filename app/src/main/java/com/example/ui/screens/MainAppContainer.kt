@@ -122,21 +122,20 @@ fun MainAppContainer(viewModel: StudyViewModel) {
                         modifier = Modifier
                             .size(56.dp)
                             .drawBehind {
-                                if (1f > 0f) {
-                                    val glowRadius = size.maxDimension * (0.75f + (1f * 0.85f))
-                                    drawCircle(
-                                        brush = Brush.radialGradient(
-                                            colors = listOf(
-                                                CosmicSecondary.copy(alpha = 0.35f * 1f),
-                                                Color.Transparent
-                                            ),
-                                            center = center,
-                                            radius = glowRadius
+                                val glowProgress = 1f
+                                val glowRadius = size.maxDimension * (0.75f + (glowProgress * 0.85f))
+                                drawCircle(
+                                    brush = Brush.radialGradient(
+                                        colors = listOf(
+                                            CosmicSecondary.copy(alpha = 0.35f * glowProgress),
+                                            Color.Transparent
                                         ),
-                                        radius = glowRadius,
-                                        center = center
-                                    )
-                                }
+                                        center = center,
+                                        radius = glowRadius
+                                    ),
+                                    radius = glowRadius,
+                                    center = center
+                                )
                             }
                             .alpha(1f)
                             .scale(1f)
