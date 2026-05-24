@@ -136,7 +136,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                     text = "Abhyas Core Analytics",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = CosmicPrimary,
+                    color = MaterialTheme.colorScheme.primary,
                     fontFamily = FontFamily.SansSerif,
                     letterSpacing = 1.sp
                 )
@@ -166,7 +166,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             Icon(
                                 imageVector = Icons.Outlined.Analytics,
                                 contentDescription = "DPP Presets",
-                                tint = CosmicSecondary,
+                                tint = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.size(18.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
@@ -174,7 +174,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 text = "DPP PRESETS",
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = CosmicSecondary,
+                                color = MaterialTheme.colorScheme.secondary,
                                 letterSpacing = 1.sp
                             )
                         }
@@ -182,7 +182,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             text = "+ Add Preset",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = CosmicAccentCheck,
+                            color = MaterialTheme.colorScheme.tertiary,
                             modifier = Modifier
                                 .clickable { showAddPresetDialog = true }
                                 .padding(4.dp)
@@ -195,7 +195,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         Text(
                             text = "No DPP presets configured. Click '+ Add Preset' to create one.",
                             fontSize = 11.sp,
-                            color = Color.Gray,
+                            color = MaterialTheme.colorScheme.onSurfaceVariant,
                             modifier = Modifier.padding(vertical = 4.dp)
                         )
                     } else {
@@ -205,11 +205,11 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         ) {
                             items(viewModel.dppPresets, key = { it.id }) { preset ->
                                 val subColor = when (preset.subject) {
-                                    "Physics" -> ColorPhysics
-                                    "Chemistry" -> ColorChemistry
-                                    "Maths" -> ColorMaths
-                                    "Biology" -> ColorBiology
-                                    else -> ColorGeneral
+                                    "Physics" -> MaterialTheme.colorScheme.primary
+                                    "Chemistry" -> MaterialTheme.colorScheme.secondary
+                                    "Maths" -> MaterialTheme.colorScheme.tertiary
+                                    "Biology" -> MaterialTheme.colorScheme.primary
+                                    else -> MaterialTheme.colorScheme.secondary
                                 }
 
                                 Row(
@@ -251,7 +251,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                     Icon(
                                         imageVector = Icons.Default.Close,
                                         contentDescription = "Delete preset",
-                                        tint = Color.Gray,
+                                        tint = MaterialTheme.colorScheme.onSurfaceVariant,
                                         modifier = Modifier
                                             .size(14.dp)
                                             .clickable { viewModel.deleteDppPreset(preset.id) }
@@ -284,7 +284,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             Icon(
                                 imageVector = Icons.Default.Assessment,
                                 contentDescription = "Add DPP",
-                                tint = CosmicSecondary,
+                                tint = MaterialTheme.colorScheme.secondary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -298,7 +298,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         Icon(
                             imageVector = if (showAddForm) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = "Expand form",
-                            tint = Color.Gray
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
@@ -316,7 +316,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             OutlinedTextField(
                                 value = title,
                                 onValueChange = { title = it },
-                                label = { Text("DPP Set Title/Sheet No.", color = Color.Gray) },
+                                label = { Text("DPP Set Title/Sheet No.", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = true,
                                 modifier = Modifier.fillMaxWidth().testTag("add_dpp_title_input"),
                                 colors = TextFieldDefaults.colors(
@@ -324,7 +324,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                     unfocusedContainerColor = CosmicSurfaceVariant,
                                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
                                     unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    focusedIndicatorColor = CosmicPrimary,
+                                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                                     unfocusedIndicatorColor = CosmicBorder
                                 )
                             )
@@ -369,7 +369,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 OutlinedTextField(
                                     value = totalQuestions,
                                     onValueChange = { totalQuestions = it },
-                                    label = { Text("Total Qs", color = Color.Gray) },
+                                    label = { Text("Total Qs", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
                                     modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
@@ -384,7 +384,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 OutlinedTextField(
                                     value = attempted,
                                     onValueChange = { attempted = it },
-                                    label = { Text("Attempted", color = Color.Gray) },
+                                    label = { Text("Attempted", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
                                     modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
@@ -399,7 +399,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 OutlinedTextField(
                                     value = correct,
                                     onValueChange = { correct = it },
-                                    label = { Text("Correct", color = Color.Gray) },
+                                    label = { Text("Correct", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
                                     modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
@@ -415,7 +415,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             OutlinedTextField(
                                 value = durationMinutes,
                                 onValueChange = { durationMinutes = it },
-                                label = { Text("Time spent (Minutes)", color = Color.Gray) },
+                                label = { Text("Time spent (Minutes)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                 singleLine = true,
                                 modifier = Modifier.fillMaxWidth(),
@@ -430,7 +430,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             OutlinedTextField(
                                 value = notes,
                                 onValueChange = { notes = it },
-                                label = { Text("Optional observations/difficulty details", color = Color.Gray) },
+                                label = { Text("Optional observations/difficulty details", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = false,
                                 maxLines = 2,
                                 modifier = Modifier.fillMaxWidth(),
@@ -468,9 +468,9 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("submit_dpp_button"),
-                                colors = ButtonDefaults.buttonColors(containerColor = CosmicPrimary)
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                             ) {
-                                Text("Log DPP sheet done", fontWeight = FontWeight.Bold, color = Color.White)
+                                Text("Log DPP sheet done", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
                             }
                         }
                     }
@@ -496,9 +496,9 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         modifier = Modifier.padding(12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(imageVector = Icons.Default.CloudQueue, contentDescription = "", tint = CosmicSecondary, modifier = Modifier.size(20.dp))
+                        Icon(imageVector = Icons.Default.CloudQueue, contentDescription = "", tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text("Sets Solved", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                        Text("Sets Solved", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
                         Text(
                             text = "${cumulativeMetrics.first} Sets",
                             fontSize = 18.sp,
@@ -519,9 +519,9 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         modifier = Modifier.padding(12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(imageVector = Icons.Default.AllInbox, contentDescription = "", tint = CosmicAccentAlert, modifier = Modifier.size(20.dp))
+                        Icon(imageVector = Icons.Default.AllInbox, contentDescription = "", tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text("Qs Tackled", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                        Text("Qs Tackled", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
                         Text(
                             text = "${cumulativeMetrics.second} Qs",
                             fontSize = 18.sp,
@@ -542,14 +542,14 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         modifier = Modifier.padding(12.dp),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
-                        Icon(imageVector = Icons.Default.PieChart, contentDescription = "", tint = CosmicAccentCheck, modifier = Modifier.size(20.dp))
+                        Icon(imageVector = Icons.Default.PieChart, contentDescription = "", tint = MaterialTheme.colorScheme.tertiary, modifier = Modifier.size(20.dp))
                         Spacer(modifier = Modifier.height(4.dp))
-                        Text("Avg Accuracy", fontSize = 10.sp, color = Color.Gray, fontWeight = FontWeight.Bold)
+                        Text("Avg Accuracy", fontSize = 10.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontWeight = FontWeight.Bold)
                         Text(
                             text = "${cumulativeMetrics.third}%",
                             fontSize = 18.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = CosmicAccentCheck,
+                            color = MaterialTheme.colorScheme.tertiary,
                             fontFamily = FontFamily.Monospace
                         )
                     }
@@ -576,7 +576,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 text = "CHRONOLOGICAL ACCURACY GRAPH",
                                 fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = CosmicSecondary,
+                                color = MaterialTheme.colorScheme.secondary,
                                 letterSpacing = 1.sp
                             )
                             Text(
@@ -596,8 +596,8 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 contentPadding = PaddingValues(horizontal = 12.dp, vertical = 6.dp),
                                 border = BorderStroke(1.dp, CosmicBorder)
                             ) {
-                                Text(viewModel.dppSubjectFilter, fontSize = 11.sp, color = Color.LightGray)
-                                Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = null, tint = Color.Gray, modifier = Modifier.size(16.dp))
+                                Text(viewModel.dppSubjectFilter, fontSize = 11.sp, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                             }
                             DropdownMenu(
                                 expanded = filterExp,
@@ -606,7 +606,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             ) {
                                 (listOf("All Subjects") + subjectsList).forEach { sub ->
                                     DropdownMenuItem(
-                                        text = { Text(sub, color = Color.White) },
+                                        text = { Text(sub, color = MaterialTheme.colorScheme.onSurface) },
                                         onClick = {
                                             viewModel.setDppFilter(sub)
                                             filterExp = false
@@ -628,7 +628,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         ) {
                             Text(
                                 text = "Analytics ko chart karne ke liye DPP solve karein.",
-                                color = Color.Gray,
+                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                 fontSize = 12.sp,
                                 textAlign = TextAlign.Center
                             )
@@ -717,7 +717,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 // 1. Draw Percentage Scored Line (Indigo)
                                 for (pIdx in 0 until dppPointsScored.size - 1) {
                                     drawLine(
-                                        color = CosmicSecondary,
+                                        color = MaterialTheme.colorScheme.secondary,
                                         start = dppPointsScored[pIdx],
                                         end = dppPointsScored[pIdx + 1],
                                         strokeWidth = 3f
@@ -727,7 +727,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 // 2. Draw Accuracy Line (Emerald)
                                 for (pIdx in 0 until dppPointsAccuracy.size - 1) {
                                     drawLine(
-                                        color = CosmicAccentCheck,
+                                        color = MaterialTheme.colorScheme.tertiary,
                                         start = dppPointsAccuracy[pIdx],
                                         end = dppPointsAccuracy[pIdx + 1],
                                         strokeWidth = 3f
@@ -737,13 +737,13 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 // Draw little coordinates circles dots
                                 dppPointsScored.forEachIndexed { dIdx, point ->
                                     drawCircle(
-                                        color = if (selectedCoordinateIndex == dIdx) Color.White else CosmicSecondary,
+                                        color = if (selectedCoordinateIndex == dIdx) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.secondary,
                                         radius = if (selectedCoordinateIndex == dIdx) 6f else 4f,
                                         center = point
                                     )
                                     if (selectedCoordinateIndex == dIdx) {
                                         drawCircle(
-                                            color = CosmicSecondary,
+                                            color = MaterialTheme.colorScheme.secondary,
                                             radius = 12f,
                                             center = point,
                                             style = Stroke(2f)
@@ -753,13 +753,13 @@ fun DPPScreen(viewModel: StudyViewModel) {
 
                                 dppPointsAccuracy.forEachIndexed { dIdx, point ->
                                     drawCircle(
-                                        color = if (selectedCoordinateIndex == dIdx) Color.White else CosmicAccentCheck,
+                                        color = if (selectedCoordinateIndex == dIdx) MaterialTheme.colorScheme.onSurface else MaterialTheme.colorScheme.tertiary,
                                         radius = if (selectedCoordinateIndex == dIdx) 6f else 4f,
                                         center = point
                                     )
                                     if (selectedCoordinateIndex == dIdx) {
                                         drawCircle(
-                                            color = CosmicAccentCheck,
+                                            color = MaterialTheme.colorScheme.tertiary,
                                             radius = 12f,
                                             center = point,
                                             style = Stroke(2f)
@@ -791,7 +791,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                         .fillMaxWidth()
                                         .padding(top = 8.dp),
                                     colors = CardDefaults.cardColors(containerColor = CosmicSurfaceVariant),
-                                    border = BorderStroke(1.dp, CosmicPrimary)
+                                    border = BorderStroke(1.dp, MaterialTheme.colorScheme.primary)
                                 ) {
                                     Column(modifier = Modifier.padding(10.dp)) {
                                         Row(
@@ -802,7 +802,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                             Text(
                                                 text = targetLog.title,
                                                 fontWeight = FontWeight.Bold,
-                                                color = Color.White,
+                                                color = MaterialTheme.colorScheme.onSurface,
                                                 fontSize = 13.sp,
                                                 maxLines = 1,
                                                 overflow = TextOverflow.Ellipsis,
@@ -810,7 +810,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                             )
                                             Text(
                                                 text = targetLog.date,
-                                                color = Color.Gray,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 fontSize = 11.sp,
                                                 fontFamily = FontFamily.Monospace
                                             )
@@ -824,19 +824,19 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                         ) {
                                             Text(
                                                 text = "Accuracy: ${String.format(Locale.getDefault(), "%.1f", acc)}%",
-                                                color = CosmicAccentCheck,
+                                                color = MaterialTheme.colorScheme.tertiary,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.Bold
                                             )
                                             Text(
                                                 text = "Percentage Scored: ${String.format(Locale.getDefault(), "%.1f", score)}%",
-                                                color = CosmicSecondary,
+                                                color = MaterialTheme.colorScheme.secondary,
                                                 fontSize = 12.sp,
                                                 fontWeight = FontWeight.Bold
                                             )
                                             Text(
                                                 text = "${targetLog.correct}/${targetLog.attempted}/${targetLog.totalQuestions} Qs",
-                                                color = Color.LightGray,
+                                                color = MaterialTheme.colorScheme.onSurfaceVariant,
                                                 fontSize = 11.sp,
                                                 fontFamily = FontFamily.Monospace
                                             )
@@ -857,7 +857,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
                             Row(verticalAlignment = Alignment.CenterVertically) {
-                                Icon(imageVector = Icons.Outlined.Analytics, contentDescription = null, tint = CosmicSecondary, modifier = Modifier.size(16.dp))
+                                Icon(imageVector = Icons.Outlined.Analytics, contentDescription = null, tint = MaterialTheme.colorScheme.secondary, modifier = Modifier.size(16.dp))
                                 Spacer(modifier = Modifier.width(6.dp))
                                 Text("Mathematical Metrics Definitions", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurface)
                             }
@@ -872,22 +872,22 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                     modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(CosmicAccentCheck))
+                                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.tertiary))
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Column {
-                                        Text("Accuracy %", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.LightGray)
-                                        Text("(Correct / Attempted) * 100", fontSize = 9.sp, color = Color.Gray, fontFamily = FontFamily.Monospace)
+                                        Text("Accuracy %", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        Text("(Correct / Attempted) * 100", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontFamily = FontFamily.Monospace)
                                     }
                                 }
                                 Row(
                                     modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     verticalAlignment = Alignment.CenterVertically
                                 ) {
-                                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(CosmicSecondary))
+                                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(MaterialTheme.colorScheme.secondary))
                                     Spacer(modifier = Modifier.width(6.dp))
                                     Column {
-                                        Text("Scored Score %", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = Color.LightGray)
-                                        Text("(Correct / Total Questions) * 100", fontSize = 9.sp, color = Color.Gray, fontFamily = FontFamily.Monospace)
+                                        Text("Scored Score %", fontSize = 10.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                                        Text("(Correct / Total Questions) * 100", fontSize = 9.sp, color = MaterialTheme.colorScheme.onSurfaceVariant, fontFamily = FontFamily.Monospace)
                                     }
                                 }
                             }
@@ -909,7 +909,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                 ) {
                     Text(
                         text = "Is subject me koi DPP records nahi hain.",
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 13.sp
                     )
                 }
@@ -936,19 +936,19 @@ fun DPPScreen(viewModel: StudyViewModel) {
 
         AlertDialog(
             onDismissRequest = { showAddPresetDialog = false },
-            title = { Text("Create DPP Preset", color = Color.White) },
+            title = { Text("Create DPP Preset", color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(
                         value = presetTitle,
                         onValueChange = { presetTitle = it },
-                        label = { Text("Preset Title", color = Color.Gray) },
+                        label = { Text("Preset Title", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         singleLine = true,
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = CosmicSurfaceVariant,
                             unfocusedContainerColor = CosmicSurfaceVariant,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
 
@@ -957,7 +957,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             onClick = { subjectExpanded = true },
                             modifier = Modifier.fillMaxWidth(),
                             shape = RoundedCornerShape(8.dp),
-                            colors = ButtonDefaults.outlinedButtonColors(contentColor = Color.White),
+                            colors = ButtonDefaults.outlinedButtonColors(contentColor = MaterialTheme.colorScheme.onSurface),
                             border = BorderStroke(1.dp, CosmicBorder)
                         ) {
                             Text("Subject: $presetSubject", fontSize = 12.sp)
@@ -969,7 +969,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         ) {
                             subjectsList.forEach { sub ->
                                 DropdownMenuItem(
-                                    text = { Text(sub, color = Color.White) },
+                                    text = { Text(sub, color = MaterialTheme.colorScheme.onSurface) },
                                     onClick = {
                                         presetSubject = sub
                                         subjectExpanded = false
@@ -986,29 +986,29 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         OutlinedTextField(
                             value = presetTotal,
                             onValueChange = { presetTotal = it },
-                            label = { Text("Total Qs", color = Color.Gray) },
+                            label = { Text("Total Qs", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
                             modifier = Modifier.weight(1f),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = CosmicSurfaceVariant,
                                 unfocusedContainerColor = CosmicSurfaceVariant,
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                             )
                         )
                         OutlinedTextField(
                             value = presetAttempted,
                             onValueChange = { presetAttempted = it },
-                            label = { Text("Attempted", color = Color.Gray) },
+                            label = { Text("Attempted", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
                             modifier = Modifier.weight(1f),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = CosmicSurfaceVariant,
                                 unfocusedContainerColor = CosmicSurfaceVariant,
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                             )
                         )
                     }
@@ -1020,29 +1020,29 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         OutlinedTextField(
                             value = presetCorrect,
                             onValueChange = { presetCorrect = it },
-                            label = { Text("Correct", color = Color.Gray) },
+                            label = { Text("Correct", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
                             modifier = Modifier.weight(1f),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = CosmicSurfaceVariant,
                                 unfocusedContainerColor = CosmicSurfaceVariant,
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                             )
                         )
                         OutlinedTextField(
                             value = presetDuration,
                             onValueChange = { presetDuration = it },
-                            label = { Text("Duration (Min)", color = Color.Gray) },
+                            label = { Text("Duration (Min)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
                             modifier = Modifier.weight(1f),
                             colors = TextFieldDefaults.colors(
                                 focusedContainerColor = CosmicSurfaceVariant,
                                 unfocusedContainerColor = CosmicSurfaceVariant,
-                                focusedTextColor = Color.White,
-                                unfocusedTextColor = Color.White
+                                focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                                unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                             )
                         )
                     }
@@ -1068,19 +1068,19 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             showAddPresetDialog = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = CosmicAccentCheck)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                 ) {
-                    Text("Create Preset", color = Color.White)
+                    Text("Create Preset", color = MaterialTheme.colorScheme.onTertiary)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showAddPresetDialog = false }) {
-                    Text("Cancel", color = Color.Gray)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             containerColor = CosmicSurface,
-            textContentColor = Color.LightGray,
-            titleContentColor = Color.White
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            titleContentColor = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -1096,11 +1096,11 @@ fun DPPItemRow(
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
     val subjectBadgeColor = when (log.subject) {
-        "Physics" -> ColorPhysics
-        "Chemistry" -> ColorChemistry
-        "Maths" -> ColorMaths
-        "Biology" -> ColorBiology
-        else -> ColorOther
+        "Physics" -> MaterialTheme.colorScheme.primary
+        "Chemistry" -> MaterialTheme.colorScheme.secondary
+        "Maths" -> MaterialTheme.colorScheme.tertiary
+        "Biology" -> MaterialTheme.colorScheme.primary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
     val acc = if (log.attempted > 0) {
@@ -1133,13 +1133,13 @@ fun DPPItemRow(
                         text = log.subject,
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.LightGray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = FontFamily.Monospace
                     )
                     Text(
                         text = "· ${log.date}",
                         fontSize = 10.sp,
-                        color = Color.Gray,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = FontFamily.Monospace
                     )
                 }
@@ -1164,15 +1164,15 @@ fun DPPItemRow(
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 // Accuracy vs Score Display Badge
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(text = "Acc: $acc%", color = CosmicAccentCheck, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
-                    Text(text = "Score: $score%", color = CosmicSecondary, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    Text(text = "Acc: $acc%", color = MaterialTheme.colorScheme.tertiary, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    Text(text = "Score: $score%", color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                 }
 
                 IconButton(
                     onClick = onDelete,
                     modifier = Modifier.testTag("delete_dpp_log_btn_${log.id}")
                 ) {
-                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete", tint = Color.Gray, modifier = Modifier.size(16.dp))
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = "Delete", tint = MaterialTheme.colorScheme.onSurfaceVariant, modifier = Modifier.size(16.dp))
                 }
             }
         }

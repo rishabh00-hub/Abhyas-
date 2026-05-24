@@ -83,7 +83,7 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                     text = "Abhyas Study Debt Tracker",
                     style = MaterialTheme.typography.titleMedium,
                     fontWeight = FontWeight.Bold,
-                    color = CosmicPrimary,
+                    color = MaterialTheme.colorScheme.primary,
                     fontFamily = FontFamily.SansSerif,
                     letterSpacing = 1.sp
                 )
@@ -99,8 +99,8 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                         color = MaterialTheme.colorScheme.onBackground
                     )
                     Badge(
-                        containerColor = if (pendingCount > 0) CosmicAccentCritical else Color.DarkGray,
-                        contentColor = Color.White,
+                        containerColor = if (pendingCount > 0) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
+                        contentColor = MaterialTheme.colorScheme.onSurface,
                         modifier = Modifier.scaleModifier(1.1f)
                     ) {
                         Text(
@@ -138,7 +138,7 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                             Icon(
                                 imageVector = Icons.Default.Warning,
                                 contentDescription = "Add Debt",
-                                tint = CosmicAccentAlert,
+                                tint = MaterialTheme.colorScheme.tertiary,
                                 modifier = Modifier.size(20.dp)
                             )
                             Spacer(modifier = Modifier.width(8.dp))
@@ -152,7 +152,7 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                         Icon(
                             imageVector = if (showAddForm) Icons.Default.KeyboardArrowUp else Icons.Default.KeyboardArrowDown,
                             contentDescription = "Expand",
-                            tint = Color.Gray
+                            tint = MaterialTheme.colorScheme.onSurfaceVariant
                         )
                     }
 
@@ -166,7 +166,7 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                             OutlinedTextField(
                                 value = title,
                                 onValueChange = { title = it },
-                                label = { Text("Backlog Title (Why did it accumulate?)", color = Color.Gray) },
+                                label = { Text("Backlog Title (Why did it accumulate?)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = true,
                                 modifier = Modifier.fillMaxWidth().testTag("add_backlog_title_input"),
                                 colors = TextFieldDefaults.colors(
@@ -174,7 +174,7 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                                     unfocusedContainerColor = CosmicSurfaceVariant,
                                     focusedTextColor = MaterialTheme.colorScheme.onSurface,
                                     unfocusedTextColor = MaterialTheme.colorScheme.onSurface,
-                                    focusedIndicatorColor = CosmicPrimary,
+                                    focusedIndicatorColor = MaterialTheme.colorScheme.primary,
                                     unfocusedIndicatorColor = CosmicBorder
                                 )
                             )
@@ -301,7 +301,7 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                                                 text = {
                                                     Text(
                                                         text = d,
-                                                        color = if (d == "Critical") CosmicAccentCritical else MaterialTheme.colorScheme.onSurfaceVariant,
+                                                        color = if (d == "Critical") MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.onSurfaceVariant,
                                                         fontWeight = if (d == "Critical") FontWeight.Bold else FontWeight.Normal
                                                     )
                                                 },
@@ -318,7 +318,7 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                             OutlinedTextField(
                                 value = notes,
                                 onValueChange = { notes = it },
-                                label = { Text("Annotations/Notes (Optional)", color = Color.Gray) },
+                                label = { Text("Annotations/Notes (Optional)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = false,
                                 maxLines = 2,
                                 modifier = Modifier.fillMaxWidth(),
@@ -348,9 +348,9 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("submit_backlog_button"),
-                                colors = ButtonDefaults.buttonColors(containerColor = CosmicPrimary)
+                                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                             ) {
-                                Text("Register Backlog Debt", fontWeight = FontWeight.Bold, color = Color.White)
+                                Text("Register Backlog Debt", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
                             }
                         }
                     }
@@ -371,19 +371,19 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                     Icon(
                         imageVector = Icons.Outlined.SentimentSatisfied,
                         contentDescription = "Zero Backlog",
-                        tint = CosmicAccentCheck,
+                        tint = MaterialTheme.colorScheme.tertiary,
                         modifier = Modifier.size(64.dp)
                     )
                     Spacer(modifier = Modifier.height(12.dp))
                     Text(
                         text = "Clean Ledger! Zero Backlogs Detected.",
-                        color = Color.White,
+                        color = MaterialTheme.colorScheme.onSurface,
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold
                     )
                     Text(
                         text = "Nice going! Keep up this offline momentum.",
-                        color = Color(0xFF64748B),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontSize = 13.sp
                     )
                 }
@@ -405,10 +405,10 @@ fun BacklogScreen(viewModel: StudyViewModel) {
     if (showCustomSubjectDialog) {
         AlertDialog(
             onDismissRequest = { showCustomSubjectDialog = false },
-            title = { Text("Add Custom Study Subject", color = Color.White) },
+            title = { Text("Add Custom Study Subject", color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column {
-                    Text("Introduce subjects dynamically to track custom lectures.", color = Color.LightGray, fontSize = 14.sp)
+                    Text("Introduce subjects dynamically to track custom lectures.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
                     Spacer(modifier = Modifier.height(12.dp))
                     OutlinedTextField(
                         value = customSubjectInputText,
@@ -418,8 +418,8 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = CosmicSurface,
                             unfocusedContainerColor = CosmicSurface,
-                            focusedTextColor = Color.White,
-                            unfocusedTextColor = Color.White
+                            focusedTextColor = MaterialTheme.colorScheme.onSurface,
+                            unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
                 }
@@ -434,19 +434,19 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                             showCustomSubjectDialog = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = CosmicPrimary)
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                 ) {
-                    Text("Add Subject", color = Color.White)
+                    Text("Add Subject", color = MaterialTheme.colorScheme.onPrimary)
                 }
             },
             dismissButton = {
                 TextButton(onClick = { showCustomSubjectDialog = false }) {
-                    Text("Cancel", color = Color.Gray)
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             },
             containerColor = CosmicSurface,
-            textContentColor = Color.LightGray,
-            titleContentColor = Color.White
+            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
+            titleContentColor = MaterialTheme.colorScheme.onSurface
         )
     }
 }
@@ -469,19 +469,19 @@ fun BacklogCard(
     val isCompact = LocalConfiguration.current.screenWidthDp < 360
 
     val ringBorderColor = when {
-        isResolved -> CosmicAccentCheck
-        isCritical -> CosmicAccentCritical
-        item.difficulty == "Medium" -> CosmicAccentAlert
+        isResolved -> MaterialTheme.colorScheme.tertiary
+        isCritical -> MaterialTheme.colorScheme.error
+        item.difficulty == "Medium" -> MaterialTheme.colorScheme.tertiary
         else -> CosmicBorder
     }
 
     val subjectLabelColor = when (item.subject) {
-        "Physics" -> ColorPhysics
-        "Chemistry" -> ColorChemistry
-        "Maths" -> ColorMaths
-        "Biology" -> ColorBiology
-        "General" -> ColorGeneral
-        else -> ColorOther
+        "Physics" -> MaterialTheme.colorScheme.primary
+        "Chemistry" -> MaterialTheme.colorScheme.secondary
+        "Maths" -> MaterialTheme.colorScheme.tertiary
+        "Biology" -> MaterialTheme.colorScheme.primary
+        "General" -> MaterialTheme.colorScheme.secondary
+        else -> MaterialTheme.colorScheme.onSurfaceVariant
     }
 
     Card(
@@ -512,7 +512,7 @@ fun BacklogCard(
                         text = "${item.subject} · ${item.type}",
                         fontSize = 11.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF94A3B8),
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
                         fontFamily = FontFamily.Monospace
                     )
                 }
@@ -520,16 +520,16 @@ fun BacklogCard(
                 Surface(
                     shape = RoundedCornerShape(12.dp),
                     color = when (item.difficulty) {
-                        "Critical" -> CosmicAccentCritical.copy(alpha = 0.15f)
-                        "Medium" -> CosmicAccentAlert.copy(alpha = 0.15f)
-                        else -> Color.DarkGray
+                        "Critical" -> MaterialTheme.colorScheme.error.copy(alpha = 0.15f)
+                        "Medium" -> MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f)
+                        else -> MaterialTheme.colorScheme.onSurfaceVariant
                     },
                     border = BorderStroke(
                         0.5.dp,
                         when (item.difficulty) {
-                            "Critical" -> CosmicAccentCritical
-                            "Medium" -> CosmicAccentAlert
-                            else -> Color.Gray
+                            "Critical" -> MaterialTheme.colorScheme.error
+                            "Medium" -> MaterialTheme.colorScheme.tertiary
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
                         }
                     )
                 ) {
@@ -538,9 +538,9 @@ fun BacklogCard(
                         fontSize = 9.sp,
                         fontWeight = FontWeight.Bold,
                         color = when (item.difficulty) {
-                            "Critical" -> CosmicAccentCritical
-                            "Medium" -> CosmicAccentAlert
-                            else -> Color.LightGray
+                            "Critical" -> MaterialTheme.colorScheme.error
+                            "Medium" -> MaterialTheme.colorScheme.tertiary
+                            else -> MaterialTheme.colorScheme.onSurfaceVariant
                         },
                         modifier = Modifier.padding(horizontal = 8.dp, vertical = 2.dp),
                         fontFamily = FontFamily.Monospace
@@ -555,7 +555,7 @@ fun BacklogCard(
                 text = item.title,
                 style = MaterialTheme.typography.titleMedium,
                 fontWeight = FontWeight.Bold,
-                color = if (isResolved) Color.Gray else MaterialTheme.colorScheme.onSurface,
+                color = if (isResolved) MaterialTheme.colorScheme.onSurfaceVariant else MaterialTheme.colorScheme.onSurface,
                 textDecoration = if (isResolved) TextDecoration.LineThrough else null,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
@@ -594,7 +594,7 @@ fun BacklogCard(
                             Icon(
                                 imageVector = if (isResolved) Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
                                 contentDescription = "Resolve toggle",
-                                tint = if (isResolved) CosmicAccentCheck else Color.Gray,
+                                tint = if (isResolved) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -611,7 +611,7 @@ fun BacklogCard(
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Delete",
-                                tint = CosmicAccentCritical,
+                                tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -620,7 +620,7 @@ fun BacklogCard(
                     if (!isResolved) {
                         Button(
                             onClick = onConvertToTarget,
-                            colors = ButtonDefaults.buttonColors(containerColor = CosmicPrimary),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                             shape = RoundedCornerShape(16.dp),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
                             modifier = Modifier
@@ -630,18 +630,18 @@ fun BacklogCard(
                             Icon(
                                 imageVector = Icons.Default.Send,
                                 contentDescription = "Convert",
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(12.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Active target me dalein", fontSize = 11.sp, color = Color.White)
+                            Text("Active target me dalein", fontSize = 11.sp, color = MaterialTheme.colorScheme.onPrimary)
                         }
                     } else {
                         Text(
                             text = "RESOLVED STUDY DEBT",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = CosmicAccentCheck,
+                            color = MaterialTheme.colorScheme.tertiary,
                             fontFamily = FontFamily.Monospace,
                             letterSpacing = 1.sp
                         )
@@ -666,7 +666,7 @@ fun BacklogCard(
                             Icon(
                                 imageVector = if (isResolved) Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
                                 contentDescription = "Resolve toggle",
-                                tint = if (isResolved) CosmicAccentCheck else Color.Gray,
+                                tint = if (isResolved) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -683,7 +683,7 @@ fun BacklogCard(
                             Icon(
                                 imageVector = Icons.Default.Delete,
                                 contentDescription = "Delete",
-                                tint = CosmicAccentCritical,
+                                tint = MaterialTheme.colorScheme.error,
                                 modifier = Modifier.size(16.dp)
                             )
                         }
@@ -693,7 +693,7 @@ fun BacklogCard(
                     if (!isResolved) {
                         Button(
                             onClick = onConvertToTarget,
-                            colors = ButtonDefaults.buttonColors(containerColor = CosmicPrimary),
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary),
                             shape = RoundedCornerShape(16.dp),
                             contentPadding = PaddingValues(horizontal = 12.dp, vertical = 2.dp),
                             modifier = Modifier.testTag("convert_backlog_btn_${item.id}")
@@ -701,18 +701,18 @@ fun BacklogCard(
                             Icon(
                                 imageVector = Icons.Default.Send,
                                 contentDescription = "Convert",
-                                tint = Color.White,
+                                tint = MaterialTheme.colorScheme.onPrimary,
                                 modifier = Modifier.size(12.dp)
                             )
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Active target me dalein", fontSize = 11.sp, color = Color.White)
+                            Text("Active target me dalein", fontSize = 11.sp, color = MaterialTheme.colorScheme.onPrimary)
                         }
                     } else {
                         Text(
                             text = "RESOLVED STUDY DEBT",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = CosmicAccentCheck,
+                            color = MaterialTheme.colorScheme.tertiary,
                             fontFamily = FontFamily.Monospace,
                             letterSpacing = 1.sp
                         )
