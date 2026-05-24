@@ -22,17 +22,21 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.unit.IntOffset
+import kotlin.math.PI
 import kotlin.math.roundToInt
+import kotlin.math.sin
 import com.example.ui.StudyViewModel
 import com.example.ui.theme.*
 import kotlinx.coroutines.delay
@@ -119,23 +123,6 @@ fun MainAppContainer(viewModel: StudyViewModel) {
                             )
                         }
                         .padding(bottom = 32.dp, end = 32.dp)
-                        .drawBehind {
-                            val center = Offset(size.width / 2f, size.height / 2f)
-                            val glowRadius = size.minDimension * 2.0f
-                            drawCircle(
-                                brush = Brush.radialGradient(
-                                    colors = listOf(
-                                        CosmicPrimary.copy(alpha = 0.55f),
-                                        CosmicSecondary.copy(alpha = 0.30f),
-                                        Color.Transparent
-                                    ),
-                                    center = center,
-                                    radius = glowRadius
-                                ),
-                                radius = glowRadius,
-                                center = center
-                            )
-                        }
                 ) {
                     Card(
                         modifier = Modifier
@@ -240,7 +227,7 @@ fun MainAppContainer(viewModel: StudyViewModel) {
                             contentAlignment = Alignment.Center
                         ) {
                             Icon(
-                                imageVector = Icons.Default.Widgets,
+                                imageVector = Icons.Default.Add,
                                 contentDescription = "Restore page switching buttons",
                                 tint = CosmicSecondary,
                                 modifier = Modifier.size(26.dp)
@@ -249,70 +236,32 @@ fun MainAppContainer(viewModel: StudyViewModel) {
                     }
                 }
             } else {
-                // Preview FAB: appears gradually as the nav bar is dragged right.
-                // Alpha and scale are bound directly to dragProgress (0f→1f).
-                if (dragProgress > 0f) {
-                    Box(
-                        modifier = Modifier
-                            .align(Alignment.BottomEnd)
-                            .padding(bottom = 32.dp, end = 32.dp)
-                            .drawBehind {
-                                val center = Offset(size.width / 2f, size.height / 2f)
-                                // Glow radius and color alpha grow with dragProgress
-                                val glowRadius = size.minDimension * (1.2f + 0.8f * dragProgress)
-                                drawCircle(
-                                    brush = Brush.radialGradient(
-                                        colors = listOf(
-                                            CosmicPrimary.copy(alpha = 0.6f * dragProgress),
-                                            CosmicSecondary.copy(alpha = 0.3f * dragProgress),
-                                            Color.Transparent
-                                        ),
-                                        center = center,
-                                        radius = glowRadius
-                                    ),
-                                    radius = glowRadius,
-                                    center = center
-                                )
-                            }
-                    ) {
-                        Card(
-                            modifier = Modifier
-                                .size(56.dp)
-                                .alpha(dragProgress)
-                                .scale(0.5f + 0.5f * dragProgress),
-                            shape = CircleShape,
-                            colors = CardDefaults.cardColors(
-                                containerColor = MaterialTheme.colorScheme.surface
-                            ),
-                            elevation = CardDefaults.cardElevation(
-                                defaultElevation = 8.dp * dragProgress
-                            )
-                        ) {
-                            Box(
-                                modifier = Modifier.fillMaxSize(),
-                                contentAlignment = Alignment.Center
-                            ) {
-                                Icon(
-                                    imageVector = Icons.Default.Widgets,
-                                    contentDescription = "Restore page switching buttons",
-                                    tint = CosmicSecondary,
-                                    modifier = Modifier.size(26.dp)
-                                )
-                            }
-                        }
-                    }
+                val animatedProgress by animateFloatAsState(
+                    targetValue = dragProgress,
+                    animationSpec = androidx.compose.animation.core.spring(
+                        dampingRatio = androidx.compose.animation.core.Spring.DampingRatioNoBouncy,
+                        stiffness = androidx.compose.animation.core.Spring.StiffnessMediumLow
+                    ),
+                    label = "MorphProgress"
+                )
+                val navItemsAlpha = 1f - animatedProgress
+                val fabIconAlpha = animatedProgress
+                val glowIntensity = if (animatedProgress <= 0f || animatedProgress >= 1f) {
+                    0f
+                } else {
+                    sin(animatedProgress * PI).toFloat()
                 }
-                // Floating Bottom Navigation Capsule with SLIDING GESTURE
+
+                val navWidth = maxWidth - 32.dp
+                val morphWidth = lerp(navWidth, 56.dp, animatedProgress)
+                val morphHeight = lerp(64.dp, 56.dp, animatedProgress)
+                val cornerRadius = lerp(32.dp, 28.dp, animatedProgress)
+                val morphShape: Shape = if (animatedProgress >= 1f) CircleShape else RoundedCornerShape(cornerRadius)
+
+                // Floating Bottom Navigation Capsule with MORPHING GESTURE
                 Box(
                     modifier = Modifier
-                        .align(Alignment.BottomCenter)
-                        .fillMaxWidth()
-                        .offset {
-                            IntOffset(
-                                swipeOffsetX.coerceAtLeast(0f).roundToInt(),
-                                0
-                            )
-                        }
+                        .align(Alignment.BottomEnd)
                         .padding(bottom = 16.dp, start = 16.dp, end = 16.dp)
                         .pointerInput(Unit) {
                             detectHorizontalDragGestures(
@@ -334,6 +283,31 @@ fun MainAppContainer(viewModel: StudyViewModel) {
                         }
                 ) {
                     FloatingBottomBar(
+                        modifier = Modifier
+                            .width(morphWidth)
+                            .height(morphHeight)
+                            .drawBehind {
+                                if (glowIntensity > 0f) {
+                                    val center = Offset(size.width / 2f, size.height / 2f)
+                                    val glowRadius = size.minDimension * (1.2f + 0.8f * animatedProgress)
+                                    drawCircle(
+                                        brush = Brush.radialGradient(
+                                            colors = listOf(
+                                                CosmicPrimary.copy(alpha = 0.6f * glowIntensity),
+                                                CosmicSecondary.copy(alpha = 0.3f * glowIntensity),
+                                                Color.Transparent
+                                            ),
+                                            center = center,
+                                            radius = glowRadius
+                                        ),
+                                        radius = glowRadius,
+                                        center = center
+                                    )
+                                }
+                            },
+                        shape = morphShape,
+                        navItemsAlpha = navItemsAlpha,
+                        fabIconAlpha = fabIconAlpha,
                         activeTab = viewModel.activeTab,
                         onTabSelected = { viewModel.switchTab(it) }
                     )
@@ -346,70 +320,84 @@ fun MainAppContainer(viewModel: StudyViewModel) {
 // --- SUBCOMPONENT: FLOATING DEEP-GLOW BOTTOM NAVIGATION CAPSULE ---
 @Composable
 fun FloatingBottomBar(
+    modifier: Modifier = Modifier,
+    shape: Shape = RoundedCornerShape(32.dp),
+    navItemsAlpha: Float = 1f,
+    fabIconAlpha: Float = 0f,
     activeTab: String,
     onTabSelected: (String) -> Unit
 ) {
     Card(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(64.dp)
-            .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outline), RoundedCornerShape(32.dp)),
-        shape = RoundedCornerShape(32.dp),
+        modifier = modifier
+            .border(BorderStroke(1.dp, MaterialTheme.colorScheme.outline), shape),
+        shape = shape,
         colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surface.copy(alpha = 0.95f))
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal = 8.dp),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            listOf(
-                NavigationItem("targets", "Targets", Icons.Default.TrackChanges, Icons.Outlined.TrackChanges),
-                NavigationItem("timer", "Focus", Icons.Default.Timer, Icons.Outlined.Timer),
-                NavigationItem("backlog", "Debt", Icons.Default.Warning, Icons.Outlined.Warning),
-                NavigationItem("dpp", "DPPs", Icons.Default.Assessment, Icons.Outlined.Assessment),
-                NavigationItem("history", "History", Icons.Default.History, Icons.Outlined.History)
-            ).forEach { navItem ->
-                val selected = activeTab == navItem.id
+        Box(modifier = Modifier.fillMaxSize()) {
+            Row(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp)
+                    .alpha(navItemsAlpha),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                listOf(
+                    NavigationItem("targets", "Targets", Icons.Default.TrackChanges, Icons.Outlined.TrackChanges),
+                    NavigationItem("timer", "Focus", Icons.Default.Timer, Icons.Outlined.Timer),
+                    NavigationItem("backlog", "Debt", Icons.Default.Warning, Icons.Outlined.Warning),
+                    NavigationItem("dpp", "DPPs", Icons.Default.Assessment, Icons.Outlined.Assessment),
+                    NavigationItem("history", "History", Icons.Default.History, Icons.Outlined.History)
+                ).forEach { navItem ->
+                    val selected = activeTab == navItem.id
 
-                val itemColor = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
-                val glowBrush = if (selected) {
-                    Brush.linearGradient(
-                        listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
-                    )
-                } else null
+                    val itemColor = if (selected) MaterialTheme.colorScheme.secondary else MaterialTheme.colorScheme.onSurfaceVariant
+                    val glowBrush = if (selected) {
+                        Brush.linearGradient(
+                            listOf(MaterialTheme.colorScheme.primary.copy(alpha = 0.15f), MaterialTheme.colorScheme.secondary.copy(alpha = 0.2f))
+                        )
+                    } else null
 
-                Box(
-                    modifier = Modifier
-                        .weight(1f)
-                        .fillMaxHeight(0.85f)
-                        .clip(CircleShape)
-                        .then(if (glowBrush != null) Modifier.background(glowBrush) else Modifier)
-                        .clickable { onTabSelected(navItem.id) }
-                        .testTag("nav_tab_${navItem.id}"),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
+                    Box(
+                        modifier = Modifier
+                            .weight(1f)
+                            .fillMaxHeight(0.85f)
+                            .clip(CircleShape)
+                            .then(if (glowBrush != null) Modifier.background(glowBrush) else Modifier)
+                            .clickable(enabled = navItemsAlpha > 0f) { onTabSelected(navItem.id) }
+                            .testTag("nav_tab_${navItem.id}"),
+                        contentAlignment = Alignment.Center
                     ) {
-                        Icon(
-                            imageVector = if (selected) navItem.activeIcon else navItem.inactiveIcon,
-                            contentDescription = navItem.label,
-                            tint = itemColor,
-                            modifier = Modifier.size(20.dp)
-                        )
-                        Spacer(modifier = Modifier.height(2.dp))
-                        Text(
-                            text = navItem.label,
-                            color = itemColor,
-                            fontSize = 9.sp,
-                            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
-                        )
+                        Column(
+                            horizontalAlignment = Alignment.CenterHorizontally,
+                            verticalArrangement = Arrangement.Center
+                        ) {
+                            Icon(
+                                imageVector = if (selected) navItem.activeIcon else navItem.inactiveIcon,
+                                contentDescription = navItem.label,
+                                tint = itemColor,
+                                modifier = Modifier.size(20.dp)
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = navItem.label,
+                                color = itemColor,
+                                fontSize = 9.sp,
+                                fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium
+                            )
+                        }
                     }
                 }
             }
+            Icon(
+                imageVector = Icons.Default.Add,
+                contentDescription = "Restore page switching buttons",
+                tint = CosmicSecondary.copy(alpha = fabIconAlpha),
+                modifier = Modifier
+                    .align(Alignment.Center)
+                    .size(26.dp)
+                    .alpha(fabIconAlpha)
+            )
         }
     }
 }
