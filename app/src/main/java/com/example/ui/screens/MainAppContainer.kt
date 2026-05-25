@@ -27,8 +27,8 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.lerp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.util.lerp
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectHorizontalDragGestures
 import androidx.compose.ui.input.pointer.pointerInput
@@ -72,6 +72,7 @@ fun MainAppContainer(viewModel: StudyViewModel) {
         ) {
             val containerWidthPx = with(density) { maxWidth.toPx() }
             val containerHeightPx = with(density) { maxHeight.toPx() }
+            val expandedBarWidth = maxWidth - 32.dp
             val paddingEndPx = with(density) { 32.dp.toPx() }
             val paddingBottomPx = with(density) { 32.dp.toPx() }
             val fabSizePx = with(density) { 56.dp.toPx() }
@@ -269,7 +270,7 @@ fun MainAppContainer(viewModel: StudyViewModel) {
                         activeTab = viewModel.activeTab,
                         onTabSelected = { viewModel.switchTab(it) },
                         progress = dragProgress,
-                        expandedWidth = maxWidth - 32.dp
+                        expandedWidth = expandedBarWidth
                     )
                 }
             }
