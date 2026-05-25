@@ -7,6 +7,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.RoomDatabase
+import androidx.room.Transaction
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
@@ -24,6 +25,9 @@ interface TargetDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertTarget(target: DailyTarget)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertBacklogForMigration(item: BacklogItem)
+
     @Update
     suspend fun updateTarget(target: DailyTarget)
 
@@ -35,6 +39,12 @@ interface TargetDao {
 
     @Query("UPDATE daily_targets SET status = :status WHERE id = :id")
     suspend fun updateTargetStatus(id: String, status: String)
+
+    @Transaction
+    suspend fun migrateTargetToBacklog(target: DailyTarget, backlogItem: BacklogItem) {
+        insertBacklogForMigration(backlogItem)
+        deleteTargetById(target.id)
+    }
 }
 
 @Dao

@@ -12,9 +12,11 @@ import androidx.compose.foundation.layout.ExperimentalLayoutApi
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.Analytics
@@ -30,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -38,6 +41,9 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import android.widget.Toast
 import com.example.data.DPPHistoryLog
 import com.example.ui.DppPreset
 import com.example.ui.StudyViewModel
@@ -53,6 +59,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
     val dppLogs by viewModel.allDPPLogs.collectAsState()
+    val context = LocalContext.current
 
     var showAddForm by remember { mutableStateOf(false) }
     var showAddPresetDialog by remember { mutableStateOf(false) }
@@ -449,21 +456,32 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                     val corrVal = correct.toIntOrNull() ?: 0
                                     val mins = durationMinutes.toIntOrNull() ?: 20
 
-                                    if (title.trim().isNotEmpty() && attVal >= corrVal && totalVal >= attVal) {
-                                        viewModel.addDPPLog(
-                                            title = title,
-                                            subject = selectedSubject,
-                                            totalQuestions = totalVal,
-                                            attempted = attVal,
-                                            correct = corrVal,
-                                            minutes = mins,
-                                            notes = notes.ifEmpty { null }
-                                        )
-                                        // Reset fields
-                                        title = ""
-                                        notes = ""
-                                        showAddForm = false
+                                    if (title.isBlank()) {
+                                        Toast.makeText(context, "Title is required", Toast.LENGTH_SHORT).show()
+                                        return@Button
                                     }
+                                    if (attVal > totalVal) {
+                                        Toast.makeText(context, "Attempted cannot exceed total questions", Toast.LENGTH_SHORT).show()
+                                        return@Button
+                                    }
+                                    if (corrVal > attVal) {
+                                        Toast.makeText(context, "Correct cannot exceed attempted", Toast.LENGTH_SHORT).show()
+                                        return@Button
+                                    }
+
+                                    viewModel.addDPPLog(
+                                        title = title,
+                                        subject = selectedSubject,
+                                        totalQuestions = totalVal,
+                                        attempted = attVal,
+                                        correct = corrVal,
+                                        minutes = mins,
+                                        notes = notes.ifEmpty { null }
+                                    )
+                                    // Reset fields
+                                    title = ""
+                                    notes = ""
+                                    showAddForm = false
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -937,11 +955,30 @@ fun DPPScreen(viewModel: StudyViewModel) {
         var presetDuration by remember { mutableStateOf(durationMinutes) }
         var subjectExpanded by remember { mutableStateOf(false) }
 
-        AlertDialog(
+        Dialog(
             onDismissRequest = { showAddPresetDialog = false },
-            title = { Text("Create DPP Preset", color = MaterialTheme.colorScheme.onSurface) },
-            text = {
-                Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .systemBarsPadding()
+                    .imePadding(),
+                shape = RoundedCornerShape(16.dp),
+                color = CosmicSurface
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                ) {
+                    Text(
+                        text = "Create DPP Preset",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleMedium
+                    )
                     OutlinedTextField(
                         value = presetTitle,
                         onValueChange = { presetTitle = it },
@@ -1049,42 +1086,45 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             )
                         )
                     }
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val totalVal = presetTotal.toIntOrNull() ?: 10
-                        val attemptVal = presetAttempted.toIntOrNull() ?: 0
-                        val correctVal = presetCorrect.toIntOrNull() ?: 0
-                        val durationVal = presetDuration.toIntOrNull() ?: 20
 
-                        if (presetTitle.trim().isNotEmpty()) {
-                            viewModel.addDppPreset(
-                                title = presetTitle,
-                                subject = presetSubject,
-                                totalQuestions = totalVal,
-                                attempted = attemptVal.coerceAtMost(totalVal),
-                                correct = correctVal.coerceAtMost(attemptVal.coerceAtMost(totalVal)),
-                                durationMinutes = durationVal
-                            )
-                            showAddPresetDialog = false
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { showAddPresetDialog = false }) {
+                            Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-                ) {
-                    Text("Create Preset", color = MaterialTheme.colorScheme.onTertiary)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                val totalVal = presetTotal.toIntOrNull() ?: 10
+                                val attemptVal = presetAttempted.toIntOrNull() ?: 0
+                                val correctVal = presetCorrect.toIntOrNull() ?: 0
+                                val durationVal = presetDuration.toIntOrNull() ?: 20
+
+                                if (presetTitle.isBlank()) {
+                                    Toast.makeText(context, "Title is required", Toast.LENGTH_SHORT).show()
+                                    return@Button
+                                }
+
+                                viewModel.addDppPreset(
+                                    title = presetTitle,
+                                    subject = presetSubject,
+                                    totalQuestions = totalVal,
+                                    attempted = attemptVal.coerceAtMost(totalVal),
+                                    correct = correctVal.coerceAtMost(attemptVal.coerceAtMost(totalVal)),
+                                    durationMinutes = durationVal
+                                )
+                                showAddPresetDialog = false
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                        ) {
+                            Text("Create Preset", color = MaterialTheme.colorScheme.onTertiary)
+                        }
+                    }
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showAddPresetDialog = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            },
-            containerColor = CosmicSurface,
-            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            titleContentColor = MaterialTheme.colorScheme.onSurface
-        )
+            }
+        }
     }
 }
 

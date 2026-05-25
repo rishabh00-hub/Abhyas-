@@ -251,7 +251,7 @@ class StudyViewModel(
         saveTemplates()
     }
 
-    val allTargets: StateFlow<List<DailyTarget>> = repository.allTargets
+    val allTargets: StateFlow<List<DailyTarget>> = repository.getAllTargetsWithMigration()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // --- BACKLOGS STATE ---
