@@ -46,9 +46,6 @@ import com.example.ui.StudyViewModel
 import com.example.ui.TargetTemplate
 import com.example.ui.theme.*
 import java.text.SimpleDateFormat
-import java.time.Instant
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 import java.util.*
 import kotlinx.coroutines.launch
 
@@ -1020,12 +1017,12 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     placeholder = { Text(todayStr, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     singleLine = true,
                                     readOnly = true,
-                                    modifier = Modifier
-                                        .weight(1f)
-                                        .clickable {
-                                            dateError = null
-                                            showDatePicker = true
-                                        },
+                                    trailingIcon = {
+                                        IconButton(onClick = { showDatePicker = true }) {
+                                            Icon(Icons.Default.DateRange, contentDescription = "Select Date")
+                                        }
+                                    },
+                                    modifier = Modifier.weight(1f),
                                     isError = dateError != null,
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = CosmicSurfaceVariant,
@@ -1036,42 +1033,31 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 )
                             }
 
-                            if (dateError != null) {
-                                Text(
-                                    text = dateError ?: "",
-                                    color = MaterialTheme.colorScheme.error,
-                                    fontSize = 11.sp
-                                )
-                            }
-
                             if (showDatePicker) {
                                 DatePickerDialog(
                                     onDismissRequest = { showDatePicker = false },
                                     confirmButton = {
                                         TextButton(
                                             onClick = {
-                                                val selectedMillis = datePickerState.selectedDateMillis
-                                                if (selectedMillis != null) {
-                                                    val selectedDate = Instant.ofEpochMilli(selectedMillis)
-                                                        .atZone(ZoneId.systemDefault())
-                                                        .toLocalDate()
-                                                    targetDateText = selectedDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
-                                                    dateError = null
-                                                }
                                                 showDatePicker = false
+                                                targetDateText = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(
+                                                    Date(datePickerState.selectedDateMillis ?: System.currentTimeMillis())
+                                                )
                                             }
-                                        ) {
-                                            Text("OK")
-                                        }
+                                        ) { Text("OK") }
                                     },
                                     dismissButton = {
-                                        TextButton(onClick = { showDatePicker = false }) {
-                                            Text("Cancel")
-                                        }
+                                        TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
                                     }
-                                ) {
-                                    DatePicker(state = datePickerState)
-                                }
+                                ) { DatePicker(state = datePickerState) }
+                            }
+
+                            if (dateError != null) {
+                                Text(
+                                    text = dateError ?: "",
+                                    color = MaterialTheme.colorScheme.error,
+                                    fontSize = 11.sp
+                                )
                             }
 
                             if (selectedType == "DPP") {
