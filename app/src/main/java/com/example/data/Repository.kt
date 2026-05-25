@@ -1,29 +1,11 @@
 package com.example.data
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.map
-import java.time.LocalDate
 
 class StudyRepository(private val db: AppDatabase) {
 
     // Target API
-    val allTargets: Flow<List<DailyTarget>> = db.targetDao().getAllTargets().map { targets ->
-        val today = LocalDate.now()
-        targets.map { target ->
-            val assignedDate = runCatching { LocalDate.parse(target.targetDate) }.getOrNull()
-            if (assignedDate != null &&
-                assignedDate.isBefore(today) &&
-                target.status != "completed" &&
-                (target.status != "BACKLOG" || target.type != "Backlog")
-            ) {
-                val backlogTarget = target.copy(status = "BACKLOG", type = "Backlog")
-                db.targetDao().updateTarget(backlogTarget)
-                backlogTarget
-            } else {
-                target
-            }
-        }
-    }
+    val allTargets: Flow<List<DailyTarget>> = db.targetDao().getAllTargets()
     fun getTargetsByDate(date: String): Flow<List<DailyTarget>> = db.targetDao().getTargetsByDate(date)
     suspend fun getTargetById(id: String): DailyTarget? = db.targetDao().getTargetById(id)
     suspend fun insertTarget(target: DailyTarget) = db.targetDao().insertTarget(target)

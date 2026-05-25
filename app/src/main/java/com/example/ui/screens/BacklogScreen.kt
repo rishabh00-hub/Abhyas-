@@ -1,6 +1,5 @@
 package com.example.ui.screens
 
-import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -23,7 +22,6 @@ import androidx.compose.ui.draw.scale
 import androidx.compose.foundation.border
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -43,13 +41,11 @@ fun BacklogScreen(viewModel: StudyViewModel) {
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
     val backlogs by viewModel.allBacklogs.collectAsState()
-    val context = LocalContext.current
 
     var showAddForm by remember { mutableStateOf(false) }
 
     // Form inputs
     var title by remember { mutableStateOf("") }
-    var titleError by remember { mutableStateOf(false) }
     var selectedSubject by remember { mutableStateOf("Physics") }
     var selectedType by remember { mutableStateOf("Lecture") }
     var selectedDifficulty by remember { mutableStateOf("Medium") } // "Easy", "Medium", "Critical"
@@ -169,13 +165,9 @@ fun BacklogScreen(viewModel: StudyViewModel) {
                         ) {
                             OutlinedTextField(
                                 value = title,
-                                onValueChange = {
-                                    title = it
-                                    titleError = false
-                                },
+                                onValueChange = { title = it },
                                 label = { Text("Backlog Title (Why did it accumulate?)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = true,
-                                isError = titleError,
                                 modifier = Modifier.fillMaxWidth().testTag("add_backlog_title_input"),
                                 colors = TextFieldDefaults.colors(
                                     focusedContainerColor = CosmicSurfaceVariant,
@@ -340,22 +332,18 @@ fun BacklogScreen(viewModel: StudyViewModel) {
 
                             Button(
                                 onClick = {
-                                    if (title.isBlank()) {
-                                        titleError = true
-                                        Toast.makeText(context, "Title is required", Toast.LENGTH_SHORT).show()
-                                        return@Button
+                                    if (title.trim().isNotEmpty()) {
+                                        viewModel.addBacklog(
+                                            title = title,
+                                            subject = selectedSubject,
+                                            type = selectedType,
+                                            difficulty = selectedDifficulty,
+                                            notes = notes.ifEmpty { null }
+                                        )
+                                        title = ""
+                                        notes = ""
+                                        showAddForm = false
                                     }
-                                    viewModel.addBacklog(
-                                        title = title,
-                                        subject = selectedSubject,
-                                        type = selectedType,
-                                        difficulty = selectedDifficulty,
-                                        notes = notes.ifEmpty { null }
-                                    )
-                                    title = ""
-                                    titleError = false
-                                    notes = ""
-                                    showAddForm = false
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()

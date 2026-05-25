@@ -7,8 +7,6 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.layout.ExperimentalLayoutApi
-import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
@@ -27,7 +25,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -45,7 +42,6 @@ import com.example.ui.theme.*
 import java.text.SimpleDateFormat
 import java.util.*
 import kotlinx.coroutines.launch
-import android.widget.Toast
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalLayoutApi::class)
 @Composable
@@ -57,11 +53,9 @@ fun TargetsScreen(viewModel: StudyViewModel) {
     val targets by viewModel.allTargets.collectAsState()
     val aspirations by viewModel.allAspirations.collectAsState()
     val isCompact = LocalConfiguration.current.screenWidthDp < 360
-    val context = LocalContext.current
 
     // Form states
     var title by remember { mutableStateOf("") }
-    var titleError by remember { mutableStateOf(false) }
     var durationMinutes by remember { mutableStateOf("45") }
     var selectedSubject by remember { mutableStateOf("Physics") }
     var selectedType by remember { mutableStateOf("Lecture") }
@@ -837,17 +831,13 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                         ) {
                             OutlinedTextField(
                                 value = title,
-                                onValueChange = {
-                                    title = it
-                                    titleError = false
-                                },
+                                onValueChange = { title = it },
                                 label = { Text("Task/Lecture Title", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 placeholder = { Text("E.g., Complete Lecture 12 Electrostatics", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = true,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("add_target_title_input"),
-                                isError = titleError,
                                 colors = TextFieldDefaults.colors(
                                     focusedContainerColor = CosmicSurfaceVariant,
                                     unfocusedContainerColor = CosmicSurfaceVariant,
@@ -1214,39 +1204,40 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     val qCount = if (selectedType == "DPP") questionsCount.toIntOrNull() else null
                                     
                                     val finalBatch = batchText.ifEmpty { viewModel.userBatch }
-                                    val finalTitle = title.trim()
-
-                                    if (finalTitle.isBlank()) {
-                                        titleError = true
-                                        Toast.makeText(context, "Title is required", Toast.LENGTH_SHORT).show()
-                                        return@Button
+                                    val finalTitle = title.ifEmpty {
+                                        if (chapterText.isNotEmpty()) {
+                                            "$chapterText ${lectureNumberText.ifEmpty { selectedType }}"
+                                        } else {
+                                            "$selectedSubject Study Session"
+                                        }
                                     }
 
-                                    viewModel.addDailyTarget(
-                                        title = finalTitle,
-                                        subject = selectedSubject,
-                                        type = selectedType,
-                                        targetDate = normalizedDate,
-                                        durationProposed = duration,
-                                        questionsCount = qCount,
-                                        chapter = chapterText.ifEmpty { null },
-                                        lectureNumber = lectureNumberText.ifEmpty { null },
-                                        batch = finalBatch,
-                                        autoAddConfig = autoConfig
-                                    )
+                                    if (finalTitle.trim().isNotEmpty()) {
+                                        viewModel.addDailyTarget(
+                                            title = finalTitle,
+                                            subject = selectedSubject,
+                                            type = selectedType,
+                                            targetDate = normalizedDate,
+                                            durationProposed = duration,
+                                            questionsCount = qCount,
+                                            chapter = chapterText.ifEmpty { null },
+                                            lectureNumber = lectureNumberText.ifEmpty { null },
+                                            batch = finalBatch,
+                                            autoAddConfig = autoConfig
+                                        )
 
-                                    // Reset fields
-                                    title = ""
-                                    titleError = false
-                                    questionsCount = ""
-                                    chapterText = ""
-                                    lectureNumberText = ""
-                                    batchText = ""
-                                    autoAddEnabled = false
-                                    autoAddMaxLecture = ""
-                                    autoAddEndDate = ""
-                                    autoAddError = null
-                                    viewModel.isTargetFormExpanded = false
+                                        // Reset fields
+                                        title = ""
+                                        questionsCount = ""
+                                        chapterText = ""
+                                        lectureNumberText = ""
+                                        batchText = ""
+                                        autoAddEnabled = false
+                                        autoAddMaxLecture = ""
+                                        autoAddEndDate = ""
+                                        autoAddError = null
+                                        viewModel.isTargetFormExpanded = false
+                                    }
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -1320,14 +1311,11 @@ fun TargetsScreen(viewModel: StudyViewModel) {
 
         AlertDialog(
             onDismissRequest = { showProfileEditDialog = false },
-            modifier = Modifier.imePadding(),
             title = { Text("Update Your Profile details", color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .verticalScroll(rememberScrollState())
+                    modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("Customize your platform, batch and goal details.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
                     
