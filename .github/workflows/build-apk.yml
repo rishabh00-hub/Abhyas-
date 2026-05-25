@@ -38,9 +38,12 @@ jobs:
           KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
           KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
 
+      - name: Rename APK to Abhyas.apk
+        run: mv app/build/outputs/apk/release/app-release.apk app/build/outputs/apk/release/Abhyas.apk
+
       - name: Upload Release APK
         uses: actions/upload-artifact@v4
         with:
           name: Abhyas-Release
-          path: app/build/outputs/apk/release/*.apk
+          path: app/build/outputs/apk/release/Abhyas.apk
           
