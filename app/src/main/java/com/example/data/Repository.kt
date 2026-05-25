@@ -1,11 +1,25 @@
 package com.example.data
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.onStart
+import java.time.LocalDate
 
 class StudyRepository(private val db: AppDatabase) {
 
     // Target API
     val allTargets: Flow<List<DailyTarget>> = db.targetDao().getAllTargets()
+        .onStart { migratePastUncompletedTargetsToBacklog() }
+        .onEach { targets ->
+            val today = LocalDate.now()
+            val hasPastUncompleted = targets.any { target ->
+                target.status != "completed" &&
+                        runCatching { LocalDate.parse(target.targetDate) }.getOrNull()?.isBefore(today) == true
+            }
+            if (hasPastUncompleted) {
+                migratePastUncompletedTargetsToBacklog()
+            }
+        }
     fun getTargetsByDate(date: String): Flow<List<DailyTarget>> = db.targetDao().getTargetsByDate(date)
     suspend fun getTargetById(id: String): DailyTarget? = db.targetDao().getTargetById(id)
     suspend fun insertTarget(target: DailyTarget) = db.targetDao().insertTarget(target)
@@ -37,4 +51,33 @@ class StudyRepository(private val db: AppDatabase) {
     suspend fun insertAspiration(aspiration: DailyAspiration) = db.aspirationDao().insertAspiration(aspiration)
     suspend fun updateAspiration(aspiration: DailyAspiration) = db.aspirationDao().updateAspiration(aspiration)
     suspend fun deleteAspirationById(id: String) = db.aspirationDao().deleteAspirationById(id)
+
+    private suspend fun migratePastUncompletedTargetsToBacklog() {
+        val today = LocalDate.now()
+        val overdueTargets = db.targetDao().getAllTargetsSnapshot().filter { target ->
+            if (target.status == "completed") return@filter false
+            val targetDate = runCatching { LocalDate.parse(target.targetDate) }.getOrNull() ?: return@filter false
+            targetDate.isBefore(today)
+        }
+        if (overdueTargets.isEmpty()) return
+
+        val backlogItems = overdueTargets.map { target ->
+            BacklogItem(
+                id = target.id,
+                title = target.title,
+                subject = target.subject,
+                type = target.type,
+                difficulty = "Medium",
+                notes = buildString {
+                    append("Migrated from target dated ${target.targetDate}.")
+                    target.chapter?.takeIf { it.isNotBlank() }?.let { append("\nChapter: $it") }
+                    target.lectureNumber?.takeIf { it.isNotBlank() }?.let { append("\nLecture: $it") }
+                    target.batch?.takeIf { it.isNotBlank() }?.let { append("\nBatch: $it") }
+                },
+                createdAt = target.createdAt,
+                status = "pending"
+            )
+        }
+        db.targetDao().migrateTargetsToBacklog(overdueTargets, backlogItems)
+    }
 }

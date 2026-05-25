@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -11,8 +12,10 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -25,6 +28,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -40,6 +44,9 @@ import com.example.ui.StudyViewModel
 import com.example.ui.TargetTemplate
 import com.example.ui.theme.*
 import java.text.SimpleDateFormat
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.*
 import kotlinx.coroutines.launch
 
@@ -50,12 +57,14 @@ fun TargetsScreen(viewModel: StudyViewModel) {
     val CosmicBorder = MaterialTheme.colorScheme.outline
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
+    val context = LocalContext.current
     val targets by viewModel.allTargets.collectAsState()
     val aspirations by viewModel.allAspirations.collectAsState()
     val isCompact = LocalConfiguration.current.screenWidthDp < 360
 
     // Form states
     var title by remember { mutableStateOf("") }
+    var titleError by remember { mutableStateOf(false) }
     var durationMinutes by remember { mutableStateOf("45") }
     var selectedSubject by remember { mutableStateOf("Physics") }
     var selectedType by remember { mutableStateOf("Lecture") }
@@ -71,6 +80,8 @@ fun TargetsScreen(viewModel: StudyViewModel) {
     var autoAddMaxLecture by remember { mutableStateOf("") }
     var autoAddEndDate by remember { mutableStateOf("") }
     var autoAddError by remember { mutableStateOf<String?>(null) }
+    var showTargetDatePicker by remember { mutableStateOf(false) }
+    var showAutoAddEndDatePicker by remember { mutableStateOf(false) }
 
     // Dialog flags
     var showProfileEditDialog by remember { mutableStateOf(false) }
@@ -831,10 +842,14 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                         ) {
                             OutlinedTextField(
                                 value = title,
-                                onValueChange = { title = it },
+                                onValueChange = {
+                                    title = it
+                                    titleError = false
+                                },
                                 label = { Text("Task/Lecture Title", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 placeholder = { Text("E.g., Complete Lecture 12 Electrostatics", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = true,
+                                isError = titleError,
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .testTag("add_target_title_input"),
@@ -1003,14 +1018,16 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                             ) {
                                 OutlinedTextField(
                                     value = targetDateText,
-                                    onValueChange = {
-                                        targetDateText = it
-                                        dateError = null
-                                    },
-                                    label = { Text("Target Date (YYYY-MM-DD)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
+                                    onValueChange = {},
+                                    readOnly = true,
+                                    label = { Text("Target Date", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     placeholder = { Text(todayStr, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     singleLine = true,
-                                    modifier = Modifier.weight(1f),
+                                    modifier = Modifier
+                                        .weight(1f)
+                                        .clickable {
+                                            showTargetDatePicker = true
+                                        },
                                     isError = dateError != null,
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = CosmicSurfaceVariant,
@@ -1104,13 +1121,14 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     )
                                     OutlinedTextField(
                                         value = autoAddEndDate,
-                                        onValueChange = {
-                                            autoAddEndDate = it
-                                            autoAddError = null
-                                        },
-                                        label = { Text("End Date (YYYY-MM-DD)", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp) },
+                                        onValueChange = {},
+                                        readOnly = true,
+                                        label = { Text("End Date", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 11.sp) },
                                         singleLine = true,
-                                        modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
+                                        modifier = (if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f))
+                                            .clickable {
+                                                showAutoAddEndDatePicker = true
+                                            },
                                         colors = TextFieldDefaults.colors(
                                             focusedContainerColor = CosmicSurfaceVariant,
                                             unfocusedContainerColor = CosmicSurfaceVariant,
@@ -1137,21 +1155,24 @@ fun TargetsScreen(viewModel: StudyViewModel) {
 
                             Button(
                                 onClick = {
+                                    val trimmedTitle = title.trim()
+                                    if (trimmedTitle.isBlank()) {
+                                        titleError = true
+                                        Toast.makeText(context, "Title is required.", Toast.LENGTH_SHORT).show()
+                                        return@Button
+                                    }
+
                                     dateError = null
                                     autoAddError = null
-                                    val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply {
-                                        isLenient = false
-                                    }
                                     val normalizedDate = if (targetDateText.isBlank()) {
                                         todayStr
                                     } else {
-                                        try {
-                                            val parsed = dateFormat.parse(targetDateText.trim()) ?: throw IllegalArgumentException()
-                                            dateFormat.format(parsed)
-                                        } catch (e: Exception) {
+                                        val parsed = runCatching { LocalDate.parse(targetDateText.trim()) }.getOrNull()
+                                        if (parsed == null) {
                                             dateError = "Enter a valid date (YYYY-MM-DD)."
                                             return@Button
                                         }
+                                        parsed.toString()
                                     }
 
                                     var autoConfig: AutoAddConfig? = null
@@ -1160,13 +1181,12 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                         val normalizedEndDate = if (autoAddEndDate.isBlank()) {
                                             null
                                         } else {
-                                            try {
-                                                val parsed = dateFormat.parse(autoAddEndDate.trim()) ?: throw IllegalArgumentException()
-                                                dateFormat.format(parsed)
-                                            } catch (e: Exception) {
+                                            val parsed = runCatching { LocalDate.parse(autoAddEndDate.trim()) }.getOrNull()
+                                            if (parsed == null) {
                                                 autoAddError = "Enter a valid end date (YYYY-MM-DD)."
                                                 return@Button
                                             }
+                                            parsed.toString()
                                         }
 
                                         if (maxLecture == null && normalizedEndDate == null) {
@@ -1186,9 +1206,9 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                         }
 
                                         if (normalizedEndDate != null) {
-                                            val baseDate = dateFormat.parse(normalizedDate) ?: throw IllegalArgumentException()
-                                            val endDate = dateFormat.parse(normalizedEndDate) ?: throw IllegalArgumentException()
-                                            if (endDate.before(baseDate)) {
+                                            val baseDate = LocalDate.parse(normalizedDate)
+                                            val endDate = LocalDate.parse(normalizedEndDate)
+                                            if (endDate.isBefore(baseDate)) {
                                                 autoAddError = "End date must be on/after target date."
                                                 return@Button
                                             }
@@ -1204,40 +1224,31 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     val qCount = if (selectedType == "DPP") questionsCount.toIntOrNull() else null
                                     
                                     val finalBatch = batchText.ifEmpty { viewModel.userBatch }
-                                    val finalTitle = title.ifEmpty {
-                                        if (chapterText.isNotEmpty()) {
-                                            "$chapterText ${lectureNumberText.ifEmpty { selectedType }}"
-                                        } else {
-                                            "$selectedSubject Study Session"
-                                        }
-                                    }
+                                    viewModel.addDailyTarget(
+                                        title = trimmedTitle,
+                                        subject = selectedSubject,
+                                        type = selectedType,
+                                        targetDate = normalizedDate,
+                                        durationProposed = duration,
+                                        questionsCount = qCount,
+                                        chapter = chapterText.ifEmpty { null },
+                                        lectureNumber = lectureNumberText.ifEmpty { null },
+                                        batch = finalBatch,
+                                        autoAddConfig = autoConfig
+                                    )
 
-                                    if (finalTitle.trim().isNotEmpty()) {
-                                        viewModel.addDailyTarget(
-                                            title = finalTitle,
-                                            subject = selectedSubject,
-                                            type = selectedType,
-                                            targetDate = normalizedDate,
-                                            durationProposed = duration,
-                                            questionsCount = qCount,
-                                            chapter = chapterText.ifEmpty { null },
-                                            lectureNumber = lectureNumberText.ifEmpty { null },
-                                            batch = finalBatch,
-                                            autoAddConfig = autoConfig
-                                        )
-
-                                        // Reset fields
-                                        title = ""
-                                        questionsCount = ""
-                                        chapterText = ""
-                                        lectureNumberText = ""
-                                        batchText = ""
-                                        autoAddEnabled = false
-                                        autoAddMaxLecture = ""
-                                        autoAddEndDate = ""
-                                        autoAddError = null
-                                        viewModel.isTargetFormExpanded = false
-                                    }
+                                    // Reset fields
+                                    title = ""
+                                    titleError = false
+                                    questionsCount = ""
+                                    chapterText = ""
+                                    lectureNumberText = ""
+                                    batchText = ""
+                                    autoAddEnabled = false
+                                    autoAddMaxLecture = ""
+                                    autoAddEndDate = ""
+                                    autoAddError = null
+                                    viewModel.isTargetFormExpanded = false
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -1311,11 +1322,14 @@ fun TargetsScreen(viewModel: StudyViewModel) {
 
         AlertDialog(
             onDismissRequest = { showProfileEditDialog = false },
+            modifier = Modifier.imePadding(),
             title = { Text("Update Your Profile details", color = MaterialTheme.colorScheme.onSurface) },
             text = {
                 Column(
                     verticalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .verticalScroll(rememberScrollState())
                 ) {
                     Text("Customize your platform, batch and goal details.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
                     
@@ -1397,6 +1411,74 @@ fun TargetsScreen(viewModel: StudyViewModel) {
             textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
             titleContentColor = MaterialTheme.colorScheme.onSurface
         )
+    }
+
+    if (showTargetDatePicker) {
+        val targetDatePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = runCatching {
+                val initialDate = if (targetDateText.isBlank()) todayStr else targetDateText
+                LocalDate.parse(initialDate).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            }.getOrNull()
+        )
+        DatePickerDialog(
+            onDismissRequest = { showTargetDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    targetDatePickerState.selectedDateMillis?.let { millis ->
+                        val selectedDate = Instant.ofEpochMilli(millis)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                            .toString()
+                        targetDateText = selectedDate
+                        dateError = null
+                    }
+                    showTargetDatePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showTargetDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = targetDatePickerState)
+        }
+    }
+
+    if (showAutoAddEndDatePicker) {
+        val endDatePickerState = rememberDatePickerState(
+            initialSelectedDateMillis = runCatching {
+                val initialDate = if (autoAddEndDate.isBlank()) todayStr else autoAddEndDate
+                LocalDate.parse(initialDate).atStartOfDay(ZoneId.systemDefault()).toInstant().toEpochMilli()
+            }.getOrNull()
+        )
+        DatePickerDialog(
+            onDismissRequest = { showAutoAddEndDatePicker = false },
+            confirmButton = {
+                TextButton(onClick = {
+                    endDatePickerState.selectedDateMillis?.let { millis ->
+                        val selectedDate = Instant.ofEpochMilli(millis)
+                            .atZone(ZoneId.systemDefault())
+                            .toLocalDate()
+                            .toString()
+                        autoAddEndDate = selectedDate
+                        autoAddError = null
+                    }
+                    showAutoAddEndDatePicker = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showAutoAddEndDatePicker = false }) {
+                    Text("Cancel")
+                }
+            }
+        ) {
+            DatePicker(state = endDatePickerState)
+        }
     }
 
     // Dialog - Add Preset Template

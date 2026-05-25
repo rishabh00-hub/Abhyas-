@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -52,6 +54,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
     val CosmicBorder = MaterialTheme.colorScheme.outline
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
+    val context = LocalContext.current
     val dppLogs by viewModel.allDPPLogs.collectAsState()
 
     var showAddForm by remember { mutableStateOf(false) }
@@ -59,12 +62,14 @@ fun DPPScreen(viewModel: StudyViewModel) {
 
     // Intake Form States
     var title by remember { mutableStateOf("") }
+    var titleError by remember { mutableStateOf(false) }
     var selectedSubject by remember { mutableStateOf("Physics") }
     var totalQuestions by remember { mutableStateOf("10") }
     var attempted by remember { mutableStateOf("8") }
     var correct by remember { mutableStateOf("6") }
     var durationMinutes by remember { mutableStateOf("20") }
     var notes by remember { mutableStateOf("") }
+    var dppMathError by remember { mutableStateOf<String?>(null) }
 
     val subjectsList = listOf("Physics", "Chemistry", "Maths", "Biology", "General")
     val isCompact = LocalConfiguration.current.screenWidthDp < 360
@@ -315,9 +320,13 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         ) {
                             OutlinedTextField(
                                 value = title,
-                                onValueChange = { title = it },
+                                onValueChange = {
+                                    title = it
+                                    titleError = false
+                                },
                                 label = { Text("DPP Set Title/Sheet No.", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = true,
+                                isError = titleError,
                                 modifier = Modifier.fillMaxWidth().testTag("add_dpp_title_input"),
                                 colors = TextFieldDefaults.colors(
                                     focusedContainerColor = CosmicSurfaceVariant,
@@ -368,10 +377,14 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             ) {
                                 OutlinedTextField(
                                     value = totalQuestions,
-                                    onValueChange = { totalQuestions = it },
+                                    onValueChange = {
+                                        totalQuestions = it
+                                        dppMathError = null
+                                    },
                                     label = { Text("Total Qs", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
+                                    isError = dppMathError != null,
                                     modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = CosmicSurfaceVariant,
@@ -383,10 +396,14 @@ fun DPPScreen(viewModel: StudyViewModel) {
 
                                 OutlinedTextField(
                                     value = attempted,
-                                    onValueChange = { attempted = it },
+                                    onValueChange = {
+                                        attempted = it
+                                        dppMathError = null
+                                    },
                                     label = { Text("Attempted", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
+                                    isError = dppMathError != null,
                                     modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = CosmicSurfaceVariant,
@@ -398,10 +415,14 @@ fun DPPScreen(viewModel: StudyViewModel) {
 
                                 OutlinedTextField(
                                     value = correct,
-                                    onValueChange = { correct = it },
+                                    onValueChange = {
+                                        correct = it
+                                        dppMathError = null
+                                    },
                                     label = { Text("Correct", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                                     singleLine = true,
+                                    isError = dppMathError != null,
                                     modifier = if (isCompact) Modifier.fillMaxWidth() else Modifier.weight(1f),
                                     colors = TextFieldDefaults.colors(
                                         focusedContainerColor = CosmicSurfaceVariant,
@@ -444,26 +465,41 @@ fun DPPScreen(viewModel: StudyViewModel) {
 
                             Button(
                                 onClick = {
+                                    if (title.trim().isBlank()) {
+                                        titleError = true
+                                        Toast.makeText(context, "Title is required.", Toast.LENGTH_SHORT).show()
+                                        return@Button
+                                    }
                                     val totalVal = totalQuestions.toIntOrNull() ?: 10
                                     val attVal = attempted.toIntOrNull() ?: 0
                                     val corrVal = correct.toIntOrNull() ?: 0
                                     val mins = durationMinutes.toIntOrNull() ?: 20
 
-                                    if (title.trim().isNotEmpty() && attVal >= corrVal && totalVal >= attVal) {
-                                        viewModel.addDPPLog(
-                                            title = title,
-                                            subject = selectedSubject,
-                                            totalQuestions = totalVal,
-                                            attempted = attVal,
-                                            correct = corrVal,
-                                            minutes = mins,
-                                            notes = notes.ifEmpty { null }
-                                        )
-                                        // Reset fields
-                                        title = ""
-                                        notes = ""
-                                        showAddForm = false
+                                    if (attVal > totalVal || corrVal > attVal) {
+                                        dppMathError = "Attempted must be ≤ total and correct must be ≤ attempted."
+                                        Toast.makeText(
+                                            context,
+                                            "Invalid DPP values: attempted ≤ total and correct ≤ attempted.",
+                                            Toast.LENGTH_SHORT
+                                        ).show()
+                                        return@Button
                                     }
+
+                                    dppMathError = null
+                                    viewModel.addDPPLog(
+                                        title = title,
+                                        subject = selectedSubject,
+                                        totalQuestions = totalVal,
+                                        attempted = attVal,
+                                        correct = corrVal,
+                                        minutes = mins,
+                                        notes = notes.ifEmpty { null }
+                                    )
+                                    // Reset fields
+                                    title = ""
+                                    titleError = false
+                                    notes = ""
+                                    showAddForm = false
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
@@ -471,6 +507,14 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
                             ) {
                                 Text("Log DPP sheet done", fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onPrimary)
+                            }
+
+                            if (dppMathError != null) {
+                                Text(
+                                    text = dppMathError ?: "",
+                                    color = MaterialTheme.colorScheme.error,
+                                    fontSize = 11.sp
+                                )
                             }
                         }
                     }
@@ -930,12 +974,14 @@ fun DPPScreen(viewModel: StudyViewModel) {
 
     if (showAddPresetDialog) {
         var presetTitle by remember { mutableStateOf("") }
+        var presetTitleError by remember { mutableStateOf(false) }
         var presetSubject by remember { mutableStateOf(selectedSubject) }
         var presetTotal by remember { mutableStateOf(totalQuestions) }
         var presetAttempted by remember { mutableStateOf(attempted) }
         var presetCorrect by remember { mutableStateOf(correct) }
         var presetDuration by remember { mutableStateOf(durationMinutes) }
         var subjectExpanded by remember { mutableStateOf(false) }
+        var presetMathError by remember { mutableStateOf<String?>(null) }
 
         AlertDialog(
             onDismissRequest = { showAddPresetDialog = false },
@@ -944,9 +990,13 @@ fun DPPScreen(viewModel: StudyViewModel) {
                 Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
                     OutlinedTextField(
                         value = presetTitle,
-                        onValueChange = { presetTitle = it },
+                        onValueChange = {
+                            presetTitle = it
+                            presetTitleError = false
+                        },
                         label = { Text("Preset Title", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                         singleLine = true,
+                        isError = presetTitleError,
                         colors = TextFieldDefaults.colors(
                             focusedContainerColor = CosmicSurfaceVariant,
                             unfocusedContainerColor = CosmicSurfaceVariant,
@@ -988,7 +1038,10 @@ fun DPPScreen(viewModel: StudyViewModel) {
                     ) {
                         OutlinedTextField(
                             value = presetTotal,
-                            onValueChange = { presetTotal = it },
+                            onValueChange = {
+                                presetTotal = it
+                                presetMathError = null
+                            },
                             label = { Text("Total Qs", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
@@ -1002,7 +1055,10 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         )
                         OutlinedTextField(
                             value = presetAttempted,
-                            onValueChange = { presetAttempted = it },
+                            onValueChange = {
+                                presetAttempted = it
+                                presetMathError = null
+                            },
                             label = { Text("Attempted", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
@@ -1022,7 +1078,10 @@ fun DPPScreen(viewModel: StudyViewModel) {
                     ) {
                         OutlinedTextField(
                             value = presetCorrect,
-                            onValueChange = { presetCorrect = it },
+                            onValueChange = {
+                                presetCorrect = it
+                                presetMathError = null
+                            },
                             label = { Text("Correct", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                             singleLine = true,
@@ -1049,27 +1108,48 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             )
                         )
                     }
+                    if (presetMathError != null) {
+                        Text(
+                            text = presetMathError ?: "",
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 11.sp
+                        )
+                    }
                 }
             },
             confirmButton = {
                 Button(
                     onClick = {
+                        if (presetTitle.trim().isBlank()) {
+                            presetTitleError = true
+                            Toast.makeText(context, "Preset title is required.", Toast.LENGTH_SHORT).show()
+                            return@Button
+                        }
                         val totalVal = presetTotal.toIntOrNull() ?: 10
                         val attemptVal = presetAttempted.toIntOrNull() ?: 0
                         val correctVal = presetCorrect.toIntOrNull() ?: 0
                         val durationVal = presetDuration.toIntOrNull() ?: 20
 
-                        if (presetTitle.trim().isNotEmpty()) {
-                            viewModel.addDppPreset(
-                                title = presetTitle,
-                                subject = presetSubject,
-                                totalQuestions = totalVal,
-                                attempted = attemptVal.coerceAtMost(totalVal),
-                                correct = correctVal.coerceAtMost(attemptVal.coerceAtMost(totalVal)),
-                                durationMinutes = durationVal
-                            )
-                            showAddPresetDialog = false
+                        if (attemptVal > totalVal || correctVal > attemptVal) {
+                            presetMathError = "Attempted must be ≤ total and correct must be ≤ attempted."
+                            Toast.makeText(
+                                context,
+                                "Invalid preset values: attempted ≤ total and correct ≤ attempted.",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                            return@Button
                         }
+
+                        presetMathError = null
+                        viewModel.addDppPreset(
+                            title = presetTitle,
+                            subject = presetSubject,
+                            totalQuestions = totalVal,
+                            attempted = attemptVal,
+                            correct = correctVal,
+                            durationMinutes = durationVal
+                        )
+                        showAddPresetDialog = false
                     },
                     colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
                 ) {

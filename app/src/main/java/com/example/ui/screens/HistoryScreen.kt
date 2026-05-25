@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
@@ -21,6 +22,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -41,12 +43,14 @@ fun HistoryScreen(viewModel: StudyViewModel) {
     val CosmicBorder = MaterialTheme.colorScheme.outline
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
+    val context = LocalContext.current
     val sessions by viewModel.allSessions.collectAsState()
 
     var showManualForm by remember { mutableStateOf(false) }
 
     // Manual Entry Form State
     var title by remember { mutableStateOf("") }
+    var titleError by remember { mutableStateOf(false) }
     var selectedSubject by remember { mutableStateOf("Physics") }
     var selectedType by remember { mutableStateOf("Self Study") }
     var durationMinutes by remember { mutableStateOf("45") }
@@ -345,9 +349,13 @@ fun HistoryScreen(viewModel: StudyViewModel) {
                         ) {
                             OutlinedTextField(
                                 value = title,
-                                onValueChange = { title = it },
+                                onValueChange = {
+                                    title = it
+                                    titleError = false
+                                },
                                 label = { Text("Log Entry Title / Chapter studied", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = true,
+                                isError = titleError,
                                 modifier = Modifier.fillMaxWidth().testTag("add_history_title_input"),
                                 colors = TextFieldDefaults.colors(
                                     focusedContainerColor = CosmicSurfaceVariant,
@@ -471,17 +479,22 @@ fun HistoryScreen(viewModel: StudyViewModel) {
 
                             Button(
                                 onClick = {
+                                    if (title.trim().isBlank()) {
+                                        titleError = true
+                                        Toast.makeText(context, "Title is required.", Toast.LENGTH_SHORT).show()
+                                        return@Button
+                                    }
                                     val mins = durationMinutes.toIntOrNull() ?: 45
                                     if (mins > 0) {
-                                        val entryTitle = title.trim().ifEmpty { "$selectedType Class Override" }
                                         viewModel.addManualStudyLog(
-                                            title = entryTitle,
+                                            title = title.trim(),
                                             subject = selectedSubject,
                                             type = selectedType,
                                             minutes = mins,
                                             notes = notes.ifEmpty { null }
                                         )
                                         title = ""
+                                        titleError = false
                                         notes = ""
                                         showManualForm = false
                                     }
