@@ -1,12 +1,25 @@
 package com.example.data
 
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.map
+import java.text.SimpleDateFormat
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Date
+import java.util.Locale
 
 class StudyRepository(private val db: AppDatabase) {
 
     // Target API
-    val allTargets: Flow<List<DailyTarget>> = db.targetDao().getAllTargets()
-    fun getTargetsByDate(date: String): Flow<List<DailyTarget>> = db.targetDao().getTargetsByDate(date)
+    private val targetDateFormatter = DateTimeFormatter.ISO_LOCAL_DATE
+
+    val allTargets: Flow<List<DailyTarget>> = getAllTargetsWithMigration()
+
+    fun getTargetsByDate(date: String): Flow<List<DailyTarget>> =
+        db.targetDao().getTargetsByDate(date).map { targets -> migrateExpiredTargets(targets) }
+
+    fun getAllTargetsWithMigration(): Flow<List<DailyTarget>> =
+        db.targetDao().getAllTargets().map { targets -> migrateExpiredTargets(targets) }
     suspend fun getTargetById(id: String): DailyTarget? = db.targetDao().getTargetById(id)
     suspend fun insertTarget(target: DailyTarget) = db.targetDao().insertTarget(target)
     suspend fun updateTarget(target: DailyTarget) = db.targetDao().updateTarget(target)
@@ -37,4 +50,29 @@ class StudyRepository(private val db: AppDatabase) {
     suspend fun insertAspiration(aspiration: DailyAspiration) = db.aspirationDao().insertAspiration(aspiration)
     suspend fun updateAspiration(aspiration: DailyAspiration) = db.aspirationDao().updateAspiration(aspiration)
     suspend fun deleteAspirationById(id: String) = db.aspirationDao().deleteAspirationById(id)
+
+    private suspend fun migrateExpiredTargets(targets: List<DailyTarget>): List<DailyTarget> {
+        val today = LocalDate.now()
+        val remainingTargets = mutableListOf<DailyTarget>()
+        targets.forEach { target ->
+            val targetDate = runCatching { LocalDate.parse(target.targetDate, targetDateFormatter) }.getOrNull()
+            val shouldMigrate = targetDate != null && targetDate.isBefore(today) && target.status != "completed"
+            if (shouldMigrate) {
+                val backlogItem = BacklogItem(
+                    id = target.id,
+                    title = target.title,
+                    subject = target.subject,
+                    type = target.type,
+                    difficulty = "Critical",
+                    notes = null,
+                    createdAt = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault()).format(Date()),
+                    status = "pending"
+                )
+                db.targetDao().migrateTargetToBacklog(target, backlogItem)
+            } else {
+                remainingTargets.add(target)
+            }
+        }
+        return remainingTargets
+    }
 }

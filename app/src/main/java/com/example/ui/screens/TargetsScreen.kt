@@ -11,9 +11,11 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.lazy.rememberLazyListState
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.*
@@ -25,6 +27,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -33,6 +36,9 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.window.Dialog
+import androidx.compose.ui.window.DialogProperties
+import android.widget.Toast
 import com.example.data.DailyAspiration
 import com.example.data.DailyTarget
 import com.example.ui.AutoAddConfig
@@ -53,6 +59,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
     val targets by viewModel.allTargets.collectAsState()
     val aspirations by viewModel.allAspirations.collectAsState()
     val isCompact = LocalConfiguration.current.screenWidthDp < 360
+    val context = LocalContext.current
 
     // Form states
     var title by remember { mutableStateOf("") }
@@ -62,6 +69,8 @@ fun TargetsScreen(viewModel: StudyViewModel) {
     var targetDateText by remember { mutableStateOf("") } // YYYY-MM-DD
     var questionsCount by remember { mutableStateOf("") } // optional DPP count
     var dateError by remember { mutableStateOf<String?>(null) }
+    var showDatePicker by remember { mutableStateOf(false) }
+    val datePickerState = rememberDatePickerState()
     
     // New customized fields
     var chapterText by remember { mutableStateOf("") }
@@ -1003,13 +1012,16 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                             ) {
                                 OutlinedTextField(
                                     value = targetDateText,
-                                    onValueChange = {
-                                        targetDateText = it
-                                        dateError = null
-                                    },
+                                    onValueChange = {},
                                     label = { Text("Target Date (YYYY-MM-DD)", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     placeholder = { Text(todayStr, color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                     singleLine = true,
+                                    readOnly = true,
+                                    trailingIcon = {
+                                        IconButton(onClick = { showDatePicker = true }) {
+                                            Icon(Icons.Default.DateRange, contentDescription = "Select Date")
+                                        }
+                                    },
                                     modifier = Modifier.weight(1f),
                                     isError = dateError != null,
                                     colors = TextFieldDefaults.colors(
@@ -1021,6 +1033,25 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 )
                             }
 
+                            if (showDatePicker) {
+                                DatePickerDialog(
+                                    onDismissRequest = { showDatePicker = false },
+                                    confirmButton = {
+                                        TextButton(
+                                            onClick = {
+                                                showDatePicker = false
+                                                targetDateText = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(
+                                                    Date(datePickerState.selectedDateMillis ?: System.currentTimeMillis())
+                                                )
+                                            }
+                                        ) { Text("OK") }
+                                    },
+                                    dismissButton = {
+                                        TextButton(onClick = { showDatePicker = false }) { Text("Cancel") }
+                                    }
+                                ) { DatePicker(state = datePickerState) }
+                            }
+
                             if (dateError != null) {
                                 Text(
                                     text = dateError ?: "",
@@ -1029,7 +1060,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 )
                             }
 
-                             if (selectedType == "DPP") {
+                            if (selectedType == "DPP") {
                                 OutlinedTextField(
                                     value = questionsCount,
                                     onValueChange = { questionsCount = it },
@@ -1139,6 +1170,10 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 onClick = {
                                     dateError = null
                                     autoAddError = null
+                                    if (title.isBlank()) {
+                                        Toast.makeText(context, "Title is required", Toast.LENGTH_SHORT).show()
+                                        return@Button
+                                    }
                                     val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply {
                                         isLenient = false
                                     }
@@ -1204,15 +1239,9 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     val qCount = if (selectedType == "DPP") questionsCount.toIntOrNull() else null
                                     
                                     val finalBatch = batchText.ifEmpty { viewModel.userBatch }
-                                    val finalTitle = title.ifEmpty {
-                                        if (chapterText.isNotEmpty()) {
-                                            "$chapterText ${lectureNumberText.ifEmpty { selectedType }}"
-                                        } else {
-                                            "$selectedSubject Study Session"
-                                        }
-                                    }
+                                    val finalTitle = title.trim()
 
-                                    if (finalTitle.trim().isNotEmpty()) {
+                                    if (finalTitle.isNotEmpty()) {
                                         viewModel.addDailyTarget(
                                             title = finalTitle,
                                             subject = selectedSubject,
@@ -1309,16 +1338,36 @@ fun TargetsScreen(viewModel: StudyViewModel) {
         var editBatchText by remember { mutableStateOf(viewModel.userBatch) }
         var editPrepText by remember { mutableStateOf(viewModel.userPreparation) }
 
-        AlertDialog(
+        Dialog(
             onDismissRequest = { showProfileEditDialog = false },
-            title = { Text("Update Your Profile details", color = MaterialTheme.colorScheme.onSurface) },
-            text = {
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .systemBarsPadding()
+                    .imePadding(),
+                shape = RoundedCornerShape(16.dp),
+                color = CosmicSurface
+            ) {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text("Customize your platform, batch and goal details.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
-                    
+                    Text(
+                        text = "Update Your Profile details",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "Customize your platform, batch and goal details.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 13.sp
+                    )
+
                     OutlinedTextField(
                         value = editNameText,
                         onValueChange = { editNameText = it },
@@ -1370,33 +1419,33 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                             unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { showProfileEditDialog = false }) {
+                            Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                viewModel.updateProfile(
+                                    name = editNameText,
+                                    platform = editPlatformText,
+                                    batch = editBatchText,
+                                    preparation = editPrepText
+                                )
+                                showProfileEditDialog = false
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                        ) {
+                            Text("Save Changes", color = MaterialTheme.colorScheme.onTertiary)
+                        }
+                    }
                 }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        viewModel.updateProfile(
-                            name = editNameText,
-                            platform = editPlatformText,
-                            batch = editBatchText,
-                            preparation = editPrepText
-                        )
-                        showProfileEditDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-                ) {
-                    Text("Save Changes", color = MaterialTheme.colorScheme.onTertiary)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showProfileEditDialog = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            },
-            containerColor = CosmicSurface,
-            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            titleContentColor = MaterialTheme.colorScheme.onSurface
-        )
+            }
+        }
     }
 
     // Dialog - Add Preset Template
@@ -1407,15 +1456,35 @@ fun TargetsScreen(viewModel: StudyViewModel) {
         var presetChapter by remember { mutableStateOf("") }
         var presetDuration by remember { mutableStateOf("90") }
 
-        AlertDialog(
+        Dialog(
             onDismissRequest = { showAddPresetDialog = false },
-            title = { Text("Add Quick Study Preset", color = MaterialTheme.colorScheme.onSurface) },
-            text = {
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .systemBarsPadding()
+                    .imePadding(),
+                shape = RoundedCornerShape(16.dp),
+                color = CosmicSurface
+            ) {
                 Column(
-                    verticalArrangement = Arrangement.spacedBy(10.dp),
-                    modifier = Modifier.fillMaxWidth()
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(10.dp)
                 ) {
-                    Text("Define templates for subjects you study regularly to avoid repeating details later.", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 13.sp)
+                    Text(
+                        text = "Add Quick Study Preset",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "Define templates for subjects you study regularly to avoid repeating details later.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 13.sp
+                    )
 
                     // Subject option dropdown
                     var subDialogExp by remember { mutableStateOf(false) }
@@ -1512,36 +1581,36 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                             unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { showAddPresetDialog = false }) {
+                            Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                val duration = presetDuration.toIntOrNull() ?: 90
+                                val finalChapter = presetChapter.ifEmpty { "General study" }
+                                viewModel.addTemplate(
+                                    subject = presetSubject,
+                                    batch = presetBatch.ifEmpty { "Self" },
+                                    type = presetType,
+                                    chapter = finalChapter,
+                                    duration = duration
+                                )
+                                showAddPresetDialog = false
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
+                        ) {
+                            Text("Create Preset", color = MaterialTheme.colorScheme.onSecondary)
+                        }
+                    }
                 }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val duration = presetDuration.toIntOrNull() ?: 90
-                        val finalChapter = presetChapter.ifEmpty { "General study" }
-                        viewModel.addTemplate(
-                            subject = presetSubject,
-                            batch = presetBatch.ifEmpty { "Self" },
-                            type = presetType,
-                            chapter = finalChapter,
-                            duration = duration
-                        )
-                        showAddPresetDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.secondary)
-                ) {
-                    Text("Create Preset", color = MaterialTheme.colorScheme.onSecondary)
-                }
-            },
-            dismissButton = {
-                TextButton(onClick = { showAddPresetDialog = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            },
-            containerColor = CosmicSurface,
-            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            titleContentColor = MaterialTheme.colorScheme.onSurface
-        )
+            }
+        }
     }
 }
 
@@ -2081,13 +2150,35 @@ fun TargetCard(
 
     // Manual logging dialogue pop-up
     if (showManualMinsDialog) {
-        AlertDialog(
+        Dialog(
             onDismissRequest = { showManualMinsDialog = false },
-            title = { Text("Log Study Time Manually", color = MaterialTheme.colorScheme.onSurface) },
-            text = {
-                Column {
-                    Text("Overriding study seconds directly is convenient. In many minutes did you study?", color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
-                    Spacer(modifier = Modifier.height(12.dp))
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .systemBarsPadding()
+                    .imePadding(),
+                shape = RoundedCornerShape(16.dp),
+                color = CosmicSurface
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
+                ) {
+                    Text(
+                        text = "Log Study Time Manually",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "Overriding study seconds directly is convenient. In many minutes did you study?",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 14.sp
+                    )
                     OutlinedTextField(
                         value = inputMinsText,
                         onValueChange = { inputMinsText = it },
@@ -2101,85 +2192,134 @@ fun TargetCard(
                             unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
-                }
-            },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        val mins = inputMinsText.toIntOrNull() ?: 0
-                        if (mins > 0) {
-                            onLogMinutes(mins)
-                            showManualMinsDialog = false
-                            inputMinsText = ""
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { showManualMinsDialog = false }) {
+                            Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
                         }
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
-                ) {
-                    Text("Override Done", color = MaterialTheme.colorScheme.onTertiary)
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                val mins = inputMinsText.toIntOrNull() ?: 0
+                                if (mins > 0) {
+                                    onLogMinutes(mins)
+                                    showManualMinsDialog = false
+                                    inputMinsText = ""
+                                }
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                        ) {
+                            Text("Override Done", color = MaterialTheme.colorScheme.onTertiary)
+                        }
+                    }
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showManualMinsDialog = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            },
-            containerColor = CosmicSurface,
-            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            titleContentColor = MaterialTheme.colorScheme.onSurface
-        )
+            }
+        }
     }
 
     if (showDeleteConfirmDialog) {
-        AlertDialog(
+        Dialog(
             onDismissRequest = { showDeleteConfirmDialog = false },
-            title = { Text("Delete target?", color = MaterialTheme.colorScheme.onSurface) },
-            text = { Text("This action will permanently delete the target.", color = MaterialTheme.colorScheme.onSurfaceVariant) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onDelete()
-                        showDeleteConfirmDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .systemBarsPadding()
+                    .imePadding(),
+                shape = RoundedCornerShape(16.dp),
+                color = CosmicSurface
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Delete", color = MaterialTheme.colorScheme.onError)
+                    Text(
+                        text = "Delete target?",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "This action will permanently delete the target.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { showDeleteConfirmDialog = false }) {
+                            Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                onDelete()
+                                showDeleteConfirmDialog = false
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.error)
+                        ) {
+                            Text("Delete", color = MaterialTheme.colorScheme.onError)
+                        }
+                    }
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showDeleteConfirmDialog = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            },
-            containerColor = CosmicSurface,
-            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            titleContentColor = MaterialTheme.colorScheme.onSurface
-        )
+            }
+        }
     }
 
     if (showUncheckConfirmDialog) {
-        AlertDialog(
+        Dialog(
             onDismissRequest = { showUncheckConfirmDialog = false },
-            title = { Text("Uncheck completed target?", color = MaterialTheme.colorScheme.onSurface) },
-            text = { Text("This will move the target back to pending status.", color = MaterialTheme.colorScheme.onSurfaceVariant) },
-            confirmButton = {
-                Button(
-                    onClick = {
-                        onToggleComplete()
-                        showUncheckConfirmDialog = false
-                    },
-                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+            properties = DialogProperties(usePlatformDefaultWidth = false, decorFitsSystemWindows = false)
+        ) {
+            Surface(
+                modifier = Modifier
+                    .fillMaxWidth(0.9f)
+                    .systemBarsPadding()
+                    .imePadding(),
+                shape = RoundedCornerShape(16.dp),
+                color = CosmicSurface
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .verticalScroll(rememberScrollState()),
+                    verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
-                    Text("Uncheck", color = MaterialTheme.colorScheme.onTertiary)
+                    Text(
+                        text = "Uncheck completed target?",
+                        color = MaterialTheme.colorScheme.onSurface,
+                        style = MaterialTheme.typography.titleMedium
+                    )
+                    Text(
+                        text = "This will move the target back to pending status.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.End
+                    ) {
+                        TextButton(onClick = { showUncheckConfirmDialog = false }) {
+                            Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        }
+                        Spacer(modifier = Modifier.width(8.dp))
+                        Button(
+                            onClick = {
+                                onToggleComplete()
+                                showUncheckConfirmDialog = false
+                            },
+                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                        ) {
+                            Text("Uncheck", color = MaterialTheme.colorScheme.onTertiary)
+                        }
+                    }
                 }
-            },
-            dismissButton = {
-                TextButton(onClick = { showUncheckConfirmDialog = false }) {
-                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-            },
-            containerColor = CosmicSurface,
-            textContentColor = MaterialTheme.colorScheme.onSurfaceVariant,
-            titleContentColor = MaterialTheme.colorScheme.onSurface
-        )
+            }
+        }
     }
 }
