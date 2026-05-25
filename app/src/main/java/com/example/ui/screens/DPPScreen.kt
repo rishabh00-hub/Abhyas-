@@ -1,5 +1,6 @@
 package com.example.ui.screens
 
+import android.widget.Toast
 import androidx.compose.animation.*
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
@@ -30,6 +31,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -53,12 +55,14 @@ fun DPPScreen(viewModel: StudyViewModel) {
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
     val dppLogs by viewModel.allDPPLogs.collectAsState()
+    val context = LocalContext.current
 
     var showAddForm by remember { mutableStateOf(false) }
     var showAddPresetDialog by remember { mutableStateOf(false) }
 
     // Intake Form States
     var title by remember { mutableStateOf("") }
+    var titleError by remember { mutableStateOf(false) }
     var selectedSubject by remember { mutableStateOf("Physics") }
     var totalQuestions by remember { mutableStateOf("10") }
     var attempted by remember { mutableStateOf("8") }
@@ -315,9 +319,13 @@ fun DPPScreen(viewModel: StudyViewModel) {
                         ) {
                             OutlinedTextField(
                                 value = title,
-                                onValueChange = { title = it },
+                                onValueChange = {
+                                    title = it
+                                    titleError = false
+                                },
                                 label = { Text("DPP Set Title/Sheet No.", color = MaterialTheme.colorScheme.onSurfaceVariant) },
                                 singleLine = true,
+                                isError = titleError,
                                 modifier = Modifier.fillMaxWidth().testTag("add_dpp_title_input"),
                                 colors = TextFieldDefaults.colors(
                                     focusedContainerColor = CosmicSurfaceVariant,
@@ -449,21 +457,34 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                     val corrVal = correct.toIntOrNull() ?: 0
                                     val mins = durationMinutes.toIntOrNull() ?: 20
 
-                                    if (title.trim().isNotEmpty() && attVal >= corrVal && totalVal >= attVal) {
-                                        viewModel.addDPPLog(
-                                            title = title,
-                                            subject = selectedSubject,
-                                            totalQuestions = totalVal,
-                                            attempted = attVal,
-                                            correct = corrVal,
-                                            minutes = mins,
-                                            notes = notes.ifEmpty { null }
-                                        )
-                                        // Reset fields
-                                        title = ""
-                                        notes = ""
-                                        showAddForm = false
+                                    if (title.isBlank()) {
+                                        titleError = true
+                                        Toast.makeText(context, "Title is required", Toast.LENGTH_SHORT).show()
+                                        return@Button
                                     }
+                                    if (attVal > totalVal) {
+                                        Toast.makeText(context, "Attempted cannot exceed total questions", Toast.LENGTH_SHORT).show()
+                                        return@Button
+                                    }
+                                    if (corrVal > attVal) {
+                                        Toast.makeText(context, "Correct cannot exceed attempted", Toast.LENGTH_SHORT).show()
+                                        return@Button
+                                    }
+
+                                    viewModel.addDPPLog(
+                                        title = title,
+                                        subject = selectedSubject,
+                                        totalQuestions = totalVal,
+                                        attempted = attVal,
+                                        correct = corrVal,
+                                        minutes = mins,
+                                        notes = notes.ifEmpty { null }
+                                    )
+                                    // Reset fields
+                                    title = ""
+                                    titleError = false
+                                    notes = ""
+                                    showAddForm = false
                                 },
                                 modifier = Modifier
                                     .fillMaxWidth()
