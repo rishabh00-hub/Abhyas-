@@ -1,6 +1,8 @@
 package com.example.ui.screens
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -26,6 +28,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -211,19 +214,13 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             items(viewModel.dppPresets, key = { it.id }) { preset ->
-                                val subColor = when (preset.subject) {
-                                    "Physics" -> MaterialTheme.colorScheme.primary
-                                    "Chemistry" -> MaterialTheme.colorScheme.secondary
-                                    "Maths" -> MaterialTheme.colorScheme.tertiary
-                                    "Biology" -> MaterialTheme.colorScheme.primary
-                                    else -> MaterialTheme.colorScheme.secondary
-                                }
+                                val subColor = subjectBadgeColor(preset.subject)
 
                                 Row(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(12.dp))
-                                        .background(CosmicSurfaceVariant)
-                                        .border(BorderStroke(1.dp, subColor.copy(alpha = 0.5f)), RoundedCornerShape(12.dp))
+                                        .background(subColor.copy(alpha = 0.15f))
+                                        .border(BorderStroke(1.dp, subColor.copy(alpha = 0.35f)), RoundedCornerShape(12.dp))
                                         .clickable { onSelectPreset(preset) }
                                         .padding(horizontal = 10.dp, vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically,
@@ -240,7 +237,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                             text = preset.title,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurface,
+                                            color = subColor,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
@@ -954,6 +951,20 @@ fun DPPScreen(viewModel: StudyViewModel) {
         var presetCorrect by remember { mutableStateOf(correct) }
         var presetDuration by remember { mutableStateOf(durationMinutes) }
         var subjectExpanded by remember { mutableStateOf(false) }
+        var animatePresetDialogIn by remember { mutableStateOf(false) }
+        val presetDialogScale by animateFloatAsState(
+            targetValue = if (animatePresetDialogIn) 1f else 0.9f,
+            animationSpec = tween(durationMillis = 280),
+            label = "dpp_preset_dialog_scale"
+        )
+        val presetDialogAlpha by animateFloatAsState(
+            targetValue = if (animatePresetDialogIn) 1f else 0f,
+            animationSpec = tween(durationMillis = 260),
+            label = "dpp_preset_dialog_alpha"
+        )
+        LaunchedEffect(Unit) {
+            animatePresetDialogIn = true
+        }
 
         Dialog(
             onDismissRequest = { showAddPresetDialog = false },
@@ -963,21 +974,40 @@ fun DPPScreen(viewModel: StudyViewModel) {
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
                     .systemBarsPadding()
-                    .imePadding(),
+                    .imePadding()
+                    .scale(presetDialogScale)
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.linearGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.95f),
+                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.9f),
+                                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.95f)
+                            )
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
                 shape = RoundedCornerShape(16.dp),
-                color = CosmicSurface
+                color = CosmicSurface.copy(alpha = presetDialogAlpha)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(20.dp)
                         .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     Text(
-                        text = "Create DPP Preset",
+                        text = "Add DPP Preset",
                         color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                    Text(
+                        text = "Save your preferred DPP setup once so you can launch similar practice sessions faster.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
                     )
                     OutlinedTextField(
                         value = presetTitle,
@@ -1117,9 +1147,30 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 )
                                 showAddPresetDialog = false
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        listOf(
+                                            MaterialTheme.colorScheme.primary,
+                                            MaterialTheme.colorScheme.tertiary
+                                        )
+                                    )
+                                ),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
                         ) {
-                            Text("Create Preset", color = MaterialTheme.colorScheme.onTertiary)
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = "Create Preset",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                "Create Preset",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontWeight = FontWeight.ExtraBold
+                            )
                         }
                     }
                 }
@@ -1138,13 +1189,7 @@ fun DPPItemRow(
     val CosmicBorder = MaterialTheme.colorScheme.outline
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
-    val subjectBadgeColor = when (log.subject) {
-        "Physics" -> MaterialTheme.colorScheme.primary
-        "Chemistry" -> MaterialTheme.colorScheme.secondary
-        "Maths" -> MaterialTheme.colorScheme.tertiary
-        "Biology" -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val badgeColor = subjectBadgeColor(log.subject)
 
     val acc = if (log.attempted > 0) {
         ((log.correct.toFloat() / log.attempted) * 100).toInt()
@@ -1171,14 +1216,23 @@ fun DPPItemRow(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(subjectBadgeColor))
-                    Text(
-                        text = log.subject,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontFamily = FontFamily.Monospace
-                    )
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(badgeColor.copy(alpha = 0.15f))
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(badgeColor))
+                        Text(
+                            text = log.subject,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = badgeColor,
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
                     Text(
                         text = "· ${log.date}",
                         fontSize = 10.sp,
@@ -1207,7 +1261,7 @@ fun DPPItemRow(
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 // Accuracy vs Score Display Badge
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(text = "Acc: $acc%", color = MaterialTheme.colorScheme.tertiary, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    Text(text = "Acc: $acc%", color = CosmicAccentCheck, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                     Text(text = "Score: $score%", color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                 }
 

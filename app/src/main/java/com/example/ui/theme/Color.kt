@@ -20,3 +20,12 @@ val ColorMaths = Color(0xFF10B981)      // Green-emerald
 val ColorBiology = Color(0xFF8B5CF6)    // Violet-purple
 val ColorGeneral = Color(0xFFF59E0B)    // Amber
 val ColorOther = Color(0xFF64748B)      // Cool Slate
+
+fun subjectBadgeColor(subjectName: String): Color = when (subjectName) {
+    "Physics" -> ColorPhysics
+    "Chemistry" -> ColorChemistry
+    "Maths" -> ColorMaths
+    "Biology" -> ColorBiology
+    "General" -> ColorGeneral
+    else -> ColorOther
+}

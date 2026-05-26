@@ -552,14 +552,7 @@ fun SessionHistoryItemCard(
     val CosmicBorder = MaterialTheme.colorScheme.outline
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
-    val subjectLabelColor = when (session.subject) {
-        "Physics" -> MaterialTheme.colorScheme.primary
-        "Chemistry" -> MaterialTheme.colorScheme.secondary
-        "Maths" -> MaterialTheme.colorScheme.tertiary
-        "Biology" -> MaterialTheme.colorScheme.primary
-        "General" -> MaterialTheme.colorScheme.secondary
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val subjectLabelColor = subjectBadgeColor(session.subject)
 
     val totalMin = session.durationSeconds / 60
     val leftSec = session.durationSeconds % 60
@@ -599,14 +592,23 @@ fun SessionHistoryItemCard(
                         verticalAlignment = Alignment.CenterVertically,
                         horizontalArrangement = Arrangement.spacedBy(6.dp)
                     ) {
-                        Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(subjectLabelColor))
-                        Text(
-                            text = "${session.subject} · ${session.type}",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.onSurfaceVariant,
-                            fontFamily = FontFamily.Monospace
-                        )
+                        Row(
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(subjectLabelColor.copy(alpha = 0.15f))
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(subjectLabelColor))
+                            Text(
+                                text = "${session.subject} · ${session.type}",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = subjectLabelColor,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
                     }
                     Spacer(modifier = Modifier.height(6.dp))
 

@@ -473,7 +473,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     .fillMaxWidth()
                                     .height(8.dp)
                                     .clip(RoundedCornerShape(4.dp)),
-                                color = if (todayPercent == 100) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                                color = if (todayPercent == 100) CosmicAccentCheck else MaterialTheme.colorScheme.secondary,
                                 trackColor = CosmicSurfaceVariant
                             )
                         }
@@ -483,7 +483,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 .fillMaxWidth()
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
-                                    if (todayPercent == 100) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f)
+                                    if (todayPercent == 100) CosmicAccentCheck.copy(alpha = 0.15f)
                                     else MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
                                 )
                                 .padding(vertical = 8.dp),
@@ -494,7 +494,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     text = "$todayPercent%",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = if (todayPercent == 100) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary
+                                    color = if (todayPercent == 100) CosmicAccentCheck else MaterialTheme.colorScheme.secondary
                                 )
                                 Text(
                                     text = "Completed",
@@ -557,7 +557,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     .fillMaxWidth()
                                     .height(8.dp)
                                     .clip(RoundedCornerShape(4.dp)),
-                                color = if (todayPercent == 100) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                                color = if (todayPercent == 100) CosmicAccentCheck else MaterialTheme.colorScheme.secondary,
                                 trackColor = CosmicSurfaceVariant
                             )
                         }
@@ -569,7 +569,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                 .size(56.dp)
                                 .clip(RoundedCornerShape(12.dp))
                                 .background(
-                                    if (todayPercent == 100) MaterialTheme.colorScheme.tertiary.copy(alpha = 0.15f)
+                                    if (todayPercent == 100) CosmicAccentCheck.copy(alpha = 0.15f)
                                     else MaterialTheme.colorScheme.secondary.copy(alpha = 0.15f)
                                 ),
                             contentAlignment = Alignment.Center
@@ -579,7 +579,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                     text = "$todayPercent%",
                                     fontSize = 16.sp,
                                     fontWeight = FontWeight.Black,
-                                    color = if (todayPercent == 100) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary
+                                    color = if (todayPercent == 100) CosmicAccentCheck else MaterialTheme.colorScheme.secondary
                                 )
                                 Text(
                                     text = "Completed",
@@ -673,20 +673,13 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             items(viewModel.targetTemplates, key = { it.id }) { template ->
-                                val subColor = when (template.subject) {
-                                    "Physics" -> MaterialTheme.colorScheme.primary
-                                    "Chemistry" -> MaterialTheme.colorScheme.secondary
-                                    "Maths" -> MaterialTheme.colorScheme.tertiary
-                                    "Biology" -> MaterialTheme.colorScheme.primary
-                                    "General" -> MaterialTheme.colorScheme.secondary
-                                    else -> MaterialTheme.colorScheme.onSurfaceVariant
-                                }
+                                val subColor = subjectBadgeColor(template.subject)
 
                                 Row(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(12.dp))
-                                        .background(CosmicSurfaceVariant)
-                                        .border(BorderStroke(1.dp, subColor.copy(alpha = 0.5f)), RoundedCornerShape(12.dp))
+                                        .background(subColor.copy(alpha = 0.15f))
+                                        .border(BorderStroke(1.dp, subColor.copy(alpha = 0.35f)), RoundedCornerShape(12.dp))
                                         .clickable { onSelectTemplate(template) }
                                         .padding(horizontal = 10.dp, vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically,
@@ -703,7 +696,7 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                                             text = "${template.subject} (${template.type})",
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurface
+                                            color = subColor
                                         )
                                         Text(
                                             text = template.chapter,
@@ -1824,15 +1817,9 @@ fun TargetCard(
     val CosmicBorder = MaterialTheme.colorScheme.outline
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
     val isCompact = LocalConfiguration.current.screenWidthDp < 360
+    val successColor = CosmicAccentCheck
 
-    val subjectColor = when (target.subject) {
-        "Physics" -> MaterialTheme.colorScheme.primary
-        "Chemistry" -> MaterialTheme.colorScheme.secondary
-        "Maths" -> MaterialTheme.colorScheme.tertiary
-        "Biology" -> MaterialTheme.colorScheme.primary
-        "General" -> MaterialTheme.colorScheme.secondary
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val subjectColor = subjectBadgeColor(target.subject)
 
     var showManualMinsDialog by remember { mutableStateOf(false) }
     var showDeleteConfirmDialog by remember { mutableStateOf(false) }
@@ -1852,7 +1839,7 @@ fun TargetCard(
             .fillMaxWidth()
             .testTag("target_item_card_${target.id}"),
         colors = CardDefaults.cardColors(containerColor = CosmicSurface),
-        border = BorderStroke(1.dp, if (isFullComplete) MaterialTheme.colorScheme.tertiary else CosmicBorder)
+        border = BorderStroke(1.dp, CosmicBorder)
     ) {
         Column(modifier = Modifier.padding(14.dp)) {
             // Main Top Title Area
@@ -1869,19 +1856,28 @@ fun TargetCard(
                         modifier = Modifier.fillMaxWidth(),
                         maxItemsInEachRow = if (isCompact) 1 else 2
                     ) {
-                        Box(
+                        Row(
                             modifier = Modifier
-                                .size(8.dp)
-                                .clip(CircleShape)
-                                .background(subjectColor)
-                        )
-                        Text(
-                            text = "${target.subject} • ${target.type}",
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = subjectColor,
-                            fontFamily = FontFamily.Monospace
-                        )
+                                .clip(RoundedCornerShape(999.dp))
+                                .background(subjectColor.copy(alpha = 0.15f))
+                                .padding(horizontal = 8.dp, vertical = 4.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.spacedBy(6.dp)
+                        ) {
+                            Box(
+                                modifier = Modifier
+                                    .size(8.dp)
+                                    .clip(CircleShape)
+                                    .background(subjectColor)
+                            )
+                            Text(
+                                text = "${target.subject} • ${target.type}",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = subjectColor,
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
                         
                         // Batch Tag Display
                         if (!target.batch.isNullOrEmpty()) {
@@ -1988,7 +1984,7 @@ fun TargetCard(
                     Icon(
                         imageVector = if (isFullComplete) Icons.Filled.CheckCircle else Icons.Outlined.CheckCircle,
                         contentDescription = "Status check",
-                        tint = if (isFullComplete) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
+                        tint = if (isFullComplete) successColor else MaterialTheme.colorScheme.onSurfaceVariant,
                         modifier = Modifier.size(28.dp)
                     )
                 }
@@ -2013,7 +2009,7 @@ fun TargetCard(
                     text = "$completedPercentage%",
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Bold,
-                    color = if (isFullComplete) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.secondary,
+                    color = MaterialTheme.colorScheme.secondary,
                     fontFamily = FontFamily.Monospace
                 )
             }
@@ -2026,7 +2022,7 @@ fun TargetCard(
                     .fillMaxWidth()
                     .height(6.dp)
                     .clip(RoundedCornerShape(3.dp)),
-                color = if (isFullComplete) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.primary,
+                color = if (isFullComplete) successColor else MaterialTheme.colorScheme.primary,
                 trackColor = CosmicSurfaceVariant
             )
 
@@ -2122,7 +2118,7 @@ fun TargetCard(
                             text = "RESOLVED",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.tertiary,
+                            color = successColor,
                             fontFamily = FontFamily.Monospace,
                             letterSpacing = 1.sp
                         )
@@ -2190,7 +2186,7 @@ fun TargetCard(
                             text = "RESOLVED",
                             fontSize = 11.sp,
                             fontWeight = FontWeight.ExtraBold,
-                            color = MaterialTheme.colorScheme.tertiary,
+                            color = successColor,
                             fontFamily = FontFamily.Monospace,
                             letterSpacing = 1.sp
                         )
