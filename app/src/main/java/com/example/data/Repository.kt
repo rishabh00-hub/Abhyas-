@@ -33,6 +33,20 @@ class StudyRepository(private val db: AppDatabase) {
     suspend fun updateBacklog(item: BacklogItem) = db.backlogDao().updateBacklog(item)
     suspend fun deleteBacklogById(id: String) = db.backlogDao().deleteBacklogById(id)
     suspend fun updateBacklogStatus(id: String, status: String) = db.backlogDao().updateBacklogStatus(id, status)
+    suspend fun completeBacklogAndMigrateToHistory(item: BacklogItem, durationSeconds: Int = 45 * 60) {
+        val nowStr = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault()).format(Date())
+        val historySession = StudySession(
+            id = item.id,
+            startTime = nowStr,
+            endTime = nowStr,
+            durationSeconds = durationSeconds,
+            subject = item.subject,
+            type = "Backlog: ${item.type}",
+            associatedTargetId = null,
+            notes = "Backlog Completed: ${item.title}\nDifficulty: ${item.difficulty}\nCreated At: ${item.createdAt}"
+        )
+        db.backlogDao().migrateBacklogToHistory(item.id, historySession)
+    }
 
     // DPP API
     val allDPPLogs: Flow<List<DPPHistoryLog>> = db.dppDao().getAllDPPLogs()

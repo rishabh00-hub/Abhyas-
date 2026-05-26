@@ -63,6 +63,15 @@ interface BacklogDao {
 
     @Query("UPDATE backlog_items SET status = :status WHERE id = :id")
     suspend fun updateBacklogStatus(id: String, status: String)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSessionForBacklogMigration(session: StudySession)
+
+    @Transaction
+    suspend fun migrateBacklogToHistory(backlogId: String, session: StudySession) {
+        insertSessionForBacklogMigration(session)
+        deleteBacklogById(backlogId)
+    }
 }
 
 @Dao

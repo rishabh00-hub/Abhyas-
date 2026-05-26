@@ -658,8 +658,16 @@ class StudyViewModel(
 
     fun resolveBacklog(item: BacklogItem) {
         viewModelScope.launch {
-            val newStatus = if (item.status == "resolved") "pending" else "resolved"
-            repository.updateBacklogStatus(item.id, newStatus)
+            val isCompleted = item.status == "completed" || item.status == "resolved"
+            if (isCompleted) {
+                repository.updateBacklogStatus(item.id, "pending")
+            } else {
+                if (isHistoryEnabled) {
+                    repository.completeBacklogAndMigrateToHistory(item)
+                } else {
+                    repository.updateBacklogStatus(item.id, "completed")
+                }
+            }
         }
     }
 

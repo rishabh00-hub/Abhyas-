@@ -54,6 +54,7 @@ fun BacklogScreen(viewModel: StudyViewModel) {
     // Custom subject insertion State
     var showCustomSubjectDialog by remember { mutableStateOf(false) }
     var customSubjectInputText by remember { mutableStateOf("") }
+    var pendingUncheckConfirmationItem by remember { mutableStateOf<BacklogItem?>(null) }
 
     val defaultSubjects = listOf("Physics", "Chemistry", "Maths", "Biology", "General", "Other")
     val dynamicCustomSubjects by viewModel.customSubjects
@@ -393,7 +394,14 @@ fun BacklogScreen(viewModel: StudyViewModel) {
             items(backlogs, key = { it.id }) { item ->
                 BacklogCard(
                     item = item,
-                    onToggleResolve = { viewModel.resolveBacklog(item) },
+                    onToggleResolve = {
+                        val isCompleted = item.status == "completed" || item.status == "resolved"
+                        if (isCompleted) {
+                            pendingUncheckConfirmationItem = item
+                        } else {
+                            viewModel.resolveBacklog(item)
+                        }
+                    },
                     onDelete = { viewModel.deleteBacklog(item.id) },
                     onConvertToTarget = { viewModel.convertBacklogToTarget(item) }
                 )
@@ -449,6 +457,36 @@ fun BacklogScreen(viewModel: StudyViewModel) {
             titleContentColor = MaterialTheme.colorScheme.onSurface
         )
     }
+
+    pendingUncheckConfirmationItem?.let { completedItem ->
+        AlertDialog(
+            onDismissRequest = { pendingUncheckConfirmationItem = null },
+            title = { Text("Confirm Mark as Incomplete", color = MaterialTheme.colorScheme.onSurface) },
+            text = {
+                Text(
+                    "Are you sure you want to mark this as incomplete?",
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        viewModel.resolveBacklog(completedItem)
+                        pendingUncheckConfirmationItem = null
+                    },
+                    colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
+                ) {
+                    Text("Yes, Mark Incomplete", color = MaterialTheme.colorScheme.onPrimary)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { pendingUncheckConfirmationItem = null }) {
+                    Text("Cancel", color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+            },
+            containerColor = CosmicSurface
+        )
+    }
 }
 
 // --- SUBCOMPONENT: INDIVIDUAL BACKLOG CARD ---
@@ -464,7 +502,7 @@ fun BacklogCard(
     val CosmicBorder = MaterialTheme.colorScheme.outline
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
-    val isResolved = item.status == "resolved"
+    val isResolved = item.status == "completed" || item.status == "resolved"
     val isCritical = item.difficulty == "Critical"
     val isCompact = LocalConfiguration.current.screenWidthDp < 360
 
@@ -583,21 +621,19 @@ fun BacklogCard(
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         // Resolve status check
-                        IconButton(
-                            onClick = onToggleResolve,
+                        Checkbox(
+                            checked = isResolved,
+                            onCheckedChange = { onToggleResolve() },
                             modifier = Modifier
                                 .size(32.dp)
                                 .clip(CircleShape)
                                 .background(CosmicSurfaceVariant)
-                                .testTag("resolve_backlog_btn_${item.id}")
-                        ) {
-                            Icon(
-                                imageVector = if (isResolved) Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
-                                contentDescription = "Resolve toggle",
-                                tint = if (isResolved) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(16.dp)
+                                .testTag("resolve_backlog_btn_${item.id}"),
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = MaterialTheme.colorScheme.tertiary,
+                                uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                        }
+                        )
 
                         // Delete debt
                         IconButton(
@@ -655,21 +691,19 @@ fun BacklogCard(
                 ) {
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         // Resolve status check
-                        IconButton(
-                            onClick = onToggleResolve,
+                        Checkbox(
+                            checked = isResolved,
+                            onCheckedChange = { onToggleResolve() },
                             modifier = Modifier
                                 .size(32.dp)
                                 .clip(CircleShape)
                                 .background(CosmicSurfaceVariant)
-                                .testTag("resolve_backlog_btn_${item.id}")
-                        ) {
-                            Icon(
-                                imageVector = if (isResolved) Icons.Default.CheckCircle else Icons.Outlined.CheckCircle,
-                                contentDescription = "Resolve toggle",
-                                tint = if (isResolved) MaterialTheme.colorScheme.tertiary else MaterialTheme.colorScheme.onSurfaceVariant,
-                                modifier = Modifier.size(16.dp)
+                                .testTag("resolve_backlog_btn_${item.id}"),
+                            colors = CheckboxDefaults.colors(
+                                checkedColor = MaterialTheme.colorScheme.tertiary,
+                                uncheckedColor = MaterialTheme.colorScheme.onSurfaceVariant
                             )
-                        }
+                        )
 
                         // Delete debt
                         IconButton(
