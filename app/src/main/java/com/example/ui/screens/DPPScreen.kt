@@ -1,6 +1,8 @@
 package com.example.ui.screens
 
 import androidx.compose.animation.*
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
@@ -26,6 +28,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.draw.scale
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
@@ -954,6 +957,20 @@ fun DPPScreen(viewModel: StudyViewModel) {
         var presetCorrect by remember { mutableStateOf(correct) }
         var presetDuration by remember { mutableStateOf(durationMinutes) }
         var subjectExpanded by remember { mutableStateOf(false) }
+        var animatePresetDialogIn by remember { mutableStateOf(false) }
+        val presetDialogScale by animateFloatAsState(
+            targetValue = if (animatePresetDialogIn) 1f else 0.9f,
+            animationSpec = tween(durationMillis = 280),
+            label = "dpp_preset_dialog_scale"
+        )
+        val presetDialogAlpha by animateFloatAsState(
+            targetValue = if (animatePresetDialogIn) 1f else 0f,
+            animationSpec = tween(durationMillis = 260),
+            label = "dpp_preset_dialog_alpha"
+        )
+        LaunchedEffect(Unit) {
+            animatePresetDialogIn = true
+        }
 
         Dialog(
             onDismissRequest = { showAddPresetDialog = false },
@@ -963,21 +980,40 @@ fun DPPScreen(viewModel: StudyViewModel) {
                 modifier = Modifier
                     .fillMaxWidth(0.9f)
                     .systemBarsPadding()
-                    .imePadding(),
+                    .imePadding()
+                    .scale(presetDialogScale)
+                    .border(
+                        width = 2.dp,
+                        brush = Brush.linearGradient(
+                            listOf(
+                                MaterialTheme.colorScheme.primary.copy(alpha = 0.95f),
+                                MaterialTheme.colorScheme.secondary.copy(alpha = 0.9f),
+                                MaterialTheme.colorScheme.tertiary.copy(alpha = 0.95f)
+                            )
+                        ),
+                        shape = RoundedCornerShape(16.dp)
+                    ),
                 shape = RoundedCornerShape(16.dp),
-                color = CosmicSurface
+                color = CosmicSurface.copy(alpha = presetDialogAlpha)
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(16.dp)
+                        .padding(20.dp)
                         .verticalScroll(rememberScrollState()),
-                    verticalArrangement = Arrangement.spacedBy(10.dp)
+                    verticalArrangement = Arrangement.spacedBy(14.dp)
                 ) {
                     Text(
-                        text = "Create DPP Preset",
+                        text = "Add DPP Preset",
                         color = MaterialTheme.colorScheme.onSurface,
-                        style = MaterialTheme.typography.titleMedium
+                        style = MaterialTheme.typography.headlineSmall,
+                        fontWeight = FontWeight.ExtraBold
+                    )
+                    Text(
+                        text = "Save your preferred DPP setup once so you can launch similar practice sessions faster.",
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        fontSize = 14.sp,
+                        fontWeight = FontWeight.Medium
                     )
                     OutlinedTextField(
                         value = presetTitle,
@@ -1117,9 +1153,30 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                 )
                                 showAddPresetDialog = false
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.tertiary)
+                            modifier = Modifier
+                                .clip(RoundedCornerShape(12.dp))
+                                .background(
+                                    brush = Brush.linearGradient(
+                                        listOf(
+                                            MaterialTheme.colorScheme.primary,
+                                            MaterialTheme.colorScheme.tertiary
+                                        )
+                                    )
+                                ),
+                            colors = ButtonDefaults.buttonColors(containerColor = Color.Transparent),
+                            contentPadding = PaddingValues(horizontal = 16.dp, vertical = 10.dp)
                         ) {
-                            Text("Create Preset", color = MaterialTheme.colorScheme.onTertiary)
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = "Create Preset",
+                                tint = MaterialTheme.colorScheme.onPrimary
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                "Create Preset",
+                                color = MaterialTheme.colorScheme.onPrimary,
+                                fontWeight = FontWeight.ExtraBold
+                            )
                         }
                     }
                 }
