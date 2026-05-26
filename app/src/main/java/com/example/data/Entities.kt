@@ -31,7 +31,7 @@ data class BacklogItem(
     val difficulty: String, // 'Easy' | 'Medium' | 'Critical'
     val notes: String?,
     val createdAt: String,
-    val status: String // 'pending' | 'resolved'
+    val status: String // 'pending' | 'completed' (legacy: 'resolved')
 )
 
 @Entity(tableName = "dpp_history_logs")
