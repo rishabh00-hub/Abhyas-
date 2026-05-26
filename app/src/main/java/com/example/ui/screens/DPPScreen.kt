@@ -214,19 +214,13 @@ fun DPPScreen(viewModel: StudyViewModel) {
                             modifier = Modifier.fillMaxWidth()
                         ) {
                             items(viewModel.dppPresets, key = { it.id }) { preset ->
-                                val subColor = when (preset.subject) {
-                                    "Physics" -> MaterialTheme.colorScheme.primary
-                                    "Chemistry" -> MaterialTheme.colorScheme.secondary
-                                    "Maths" -> MaterialTheme.colorScheme.tertiary
-                                    "Biology" -> MaterialTheme.colorScheme.primary
-                                    else -> MaterialTheme.colorScheme.secondary
-                                }
+                                val subColor = subjectBadgeColor(preset.subject)
 
                                 Row(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(12.dp))
-                                        .background(CosmicSurfaceVariant)
-                                        .border(BorderStroke(1.dp, subColor.copy(alpha = 0.5f)), RoundedCornerShape(12.dp))
+                                        .background(subColor.copy(alpha = 0.15f))
+                                        .border(BorderStroke(1.dp, subColor.copy(alpha = 0.35f)), RoundedCornerShape(12.dp))
                                         .clickable { onSelectPreset(preset) }
                                         .padding(horizontal = 10.dp, vertical = 8.dp),
                                     verticalAlignment = Alignment.CenterVertically,
@@ -243,7 +237,7 @@ fun DPPScreen(viewModel: StudyViewModel) {
                                             text = preset.title,
                                             fontSize = 11.sp,
                                             fontWeight = FontWeight.Bold,
-                                            color = MaterialTheme.colorScheme.onSurface,
+                                            color = subColor,
                                             maxLines = 1,
                                             overflow = TextOverflow.Ellipsis
                                         )
@@ -1195,13 +1189,7 @@ fun DPPItemRow(
     val CosmicBorder = MaterialTheme.colorScheme.outline
     val CosmicSurfaceVariant = MaterialTheme.colorScheme.surfaceVariant
 
-    val subjectBadgeColor = when (log.subject) {
-        "Physics" -> MaterialTheme.colorScheme.primary
-        "Chemistry" -> MaterialTheme.colorScheme.secondary
-        "Maths" -> MaterialTheme.colorScheme.tertiary
-        "Biology" -> MaterialTheme.colorScheme.primary
-        else -> MaterialTheme.colorScheme.onSurfaceVariant
-    }
+    val badgeColor = subjectBadgeColor(log.subject)
 
     val acc = if (log.attempted > 0) {
         ((log.correct.toFloat() / log.attempted) * 100).toInt()
@@ -1228,14 +1216,23 @@ fun DPPItemRow(
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.spacedBy(6.dp)
                 ) {
-                    Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(subjectBadgeColor))
-                    Text(
-                        text = log.subject,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = MaterialTheme.colorScheme.onSurfaceVariant,
-                        fontFamily = FontFamily.Monospace
-                    )
+                    Row(
+                        modifier = Modifier
+                            .clip(RoundedCornerShape(999.dp))
+                            .background(badgeColor.copy(alpha = 0.15f))
+                            .padding(horizontal = 8.dp, vertical = 4.dp),
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Box(modifier = Modifier.size(8.dp).clip(CircleShape).background(badgeColor))
+                        Text(
+                            text = log.subject,
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = badgeColor,
+                            fontFamily = FontFamily.Monospace
+                        )
+                    }
                     Text(
                         text = "· ${log.date}",
                         fontSize = 10.sp,
@@ -1264,7 +1261,7 @@ fun DPPItemRow(
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(10.dp)) {
                 // Accuracy vs Score Display Badge
                 Column(horizontalAlignment = Alignment.End) {
-                    Text(text = "Acc: $acc%", color = MaterialTheme.colorScheme.tertiary, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
+                    Text(text = "Acc: $acc%", color = CosmicAccentCheck, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                     Text(text = "Score: $score%", color = MaterialTheme.colorScheme.secondary, fontSize = 11.sp, fontWeight = FontWeight.Bold, fontFamily = FontFamily.Monospace)
                 }
 
