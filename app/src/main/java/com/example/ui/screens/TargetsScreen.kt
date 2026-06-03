@@ -1,5 +1,7 @@
 package com.example.ui.screens
 
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.*
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
@@ -63,6 +65,16 @@ fun TargetsScreen(viewModel: StudyViewModel) {
     val aspirations by viewModel.allAspirations.collectAsState()
     val isCompact = LocalConfiguration.current.screenWidthDp < 360
     val context = LocalContext.current
+    val exportBackupLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.CreateDocument("application/json")
+    ) { uri ->
+        uri?.let { viewModel.exportDatabaseToJson(context, it) }
+    }
+    val restoreBackupLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        uri?.let { viewModel.importDatabaseFromJson(context, it) }
+    }
 
     // Form states
     var title by remember { mutableStateOf("") }
@@ -1415,6 +1427,20 @@ fun TargetsScreen(viewModel: StudyViewModel) {
                             unfocusedTextColor = MaterialTheme.colorScheme.onSurface
                         )
                     )
+
+                    OutlinedButton(
+                        onClick = { exportBackupLauncher.launch("Abhyas_Backup.json") },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Export Data Backup")
+                    }
+
+                    OutlinedButton(
+                        onClick = { restoreBackupLauncher.launch(arrayOf("application/json")) },
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Text("Restore Data Backup")
+                    }
 
                     Row(
                         modifier = Modifier.fillMaxWidth(),

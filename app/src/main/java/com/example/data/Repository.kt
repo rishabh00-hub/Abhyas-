@@ -1,5 +1,7 @@
 package com.example.data
 
+import androidx.room.Transaction
+import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
 import java.text.SimpleDateFormat
@@ -64,6 +66,51 @@ class StudyRepository(private val db: AppDatabase) {
     suspend fun insertAspiration(aspiration: DailyAspiration) = db.aspirationDao().insertAspiration(aspiration)
     suspend fun updateAspiration(aspiration: DailyAspiration) = db.aspirationDao().updateAspiration(aspiration)
     suspend fun deleteAspirationById(id: String) = db.aspirationDao().deleteAspirationById(id)
+
+    suspend fun clearAllTables() {
+        db.withTransaction {
+            clearAllTablesInternal()
+        }
+    }
+
+    suspend fun insertAllData(data: BackupData) {
+        db.withTransaction {
+            insertAllDataInternal(data)
+        }
+    }
+
+    @Transaction
+    suspend fun restoreData(backupData: BackupData) {
+        db.withTransaction {
+            db.targetDao().clearTargets()
+            db.backlogDao().clearBacklogs()
+            db.sessionDao().clearSessions()
+            db.dppDao().clearDPPLogs()
+            db.aspirationDao().clearAspirations()
+
+            if (backupData.targets.isNotEmpty()) db.targetDao().insertTargets(backupData.targets)
+            if (backupData.backlogs.isNotEmpty()) db.backlogDao().insertBacklogs(backupData.backlogs)
+            if (backupData.sessions.isNotEmpty()) db.sessionDao().insertSessions(backupData.sessions)
+            if (backupData.dpps.isNotEmpty()) db.dppDao().insertDPPLogs(backupData.dpps)
+            if (backupData.aspirations.isNotEmpty()) db.aspirationDao().insertAspirations(backupData.aspirations)
+        }
+    }
+
+    private suspend fun clearAllTablesInternal() {
+        db.sessionDao().clearSessions()
+        db.targetDao().clearTargets()
+        db.backlogDao().clearBacklogs()
+        db.dppDao().clearDPPLogs()
+        db.aspirationDao().clearAspirations()
+    }
+
+    private suspend fun insertAllDataInternal(data: BackupData) {
+        if (data.targets.isNotEmpty()) db.targetDao().insertTargets(data.targets)
+        if (data.backlogs.isNotEmpty()) db.backlogDao().insertBacklogs(data.backlogs)
+        if (data.sessions.isNotEmpty()) db.sessionDao().insertSessions(data.sessions)
+        if (data.dpps.isNotEmpty()) db.dppDao().insertDPPLogs(data.dpps)
+        if (data.aspirations.isNotEmpty()) db.aspirationDao().insertAspirations(data.aspirations)
+    }
 
     private suspend fun migrateExpiredTargets(targets: List<DailyTarget>): List<DailyTarget> {
         val today = LocalDate.now()

@@ -1,9 +1,12 @@
 package com.example.ui
 
 import android.app.Application
+import android.content.Context
 import android.media.AudioManager
 import android.media.ToneGenerator
+import android.net.Uri
 import android.util.Log
+import android.widget.Toast
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -13,11 +16,13 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import com.example.AbhyasApplication
 import com.example.data.BacklogItem
+import com.example.data.BackupData
 import com.example.data.DailyAspiration
 import com.example.data.DailyTarget
 import com.example.data.DPPHistoryLog
 import com.example.data.StudySession
 import com.example.data.StudyRepository
+import com.google.gson.Gson
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -28,6 +33,7 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Date
@@ -38,6 +44,7 @@ class StudyViewModel(
     application: Application,
     private val repository: StudyRepository
 ) : AndroidViewModel(application) {
+    private val gson = Gson()
 
     // --- NAVIGATION TABS ---
     // Tab values: "targets", "timer", "backlog", "dpp", "history"
@@ -106,6 +113,55 @@ class StudyViewModel(
             putString("user_batch", userBatch)
             putString("user_preparation", userPreparation)
             apply()
+        }
+    }
+
+    fun exportDatabaseToJson(context: Context, uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val backupData = BackupData(
+                    targets = repository.getAllTargetsWithMigration().first(),
+                    backlogs = repository.allBacklogs.first(),
+                    sessions = repository.allSessions.first(),
+                    dpps = repository.allDPPLogs.first(),
+                    aspirations = repository.allAspirations.first()
+                )
+                val json = gson.toJson(backupData)
+                context.contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
+                    writer.write(json)
+                } ?: throw IllegalStateException("Unable to open output stream")
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Data backup exported successfully", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("BackupExport", "Failed to export backup", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Backup export failed. Please try again.", Toast.LENGTH_LONG).show()
+                }
+            }
+        }
+    }
+
+    fun importDatabaseFromJson(context: Context, uri: Uri) {
+        viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val jsonString = context.contentResolver.openInputStream(uri)?.bufferedReader().use { it?.readText() }
+                    ?: throw IllegalStateException("Unable to open input stream")
+                val backupData = gson.fromJson(jsonString, BackupData::class.java)
+                    ?: throw IllegalStateException("Failed to parse backup file")
+
+                repository.restoreData(backupData)
+
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, "Data backup restored successfully", Toast.LENGTH_SHORT).show()
+                }
+            } catch (e: Exception) {
+                Log.e("BackupImport", "Failed to import backup", e)
+                withContext(Dispatchers.Main) {
+                    Toast.makeText(context, e.localizedMessage, Toast.LENGTH_LONG).show()
+                }
+            }
         }
     }
 

@@ -65,3 +65,11 @@ data class DailyAspiration(
     val text: String,
     val isCompleted: Boolean
 )
+
+data class BackupData(
+    val targets: List<DailyTarget>,
+    val backlogs: List<BacklogItem>,
+    val sessions: List<StudySession>,
+    val dpps: List<DPPHistoryLog>,
+    val aspirations: List<DailyAspiration>
+)
