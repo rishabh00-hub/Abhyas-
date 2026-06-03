@@ -340,7 +340,7 @@ fun FloatingBottomBar(
                     NavigationItem("backlog", "Debt", Icons.Default.Warning, Icons.Outlined.Warning),
                     NavigationItem("dpp", "DPPs", Icons.Default.Assessment, Icons.Outlined.Assessment),
                     NavigationItem("history", "History", Icons.Default.History, Icons.Outlined.History),
-                    NavigationItem("insights", "Insights", Icons.Outlined.Insights, Icons.Outlined.Insights)
+                    NavigationItem("insights", "Insights", Icons.Default.Insights, Icons.Outlined.Insights)
                 ).forEach { navItem ->
                     val selected = activeTab == navItem.id
 
