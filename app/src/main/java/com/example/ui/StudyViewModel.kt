@@ -39,6 +39,10 @@ class StudyViewModel(
     application: Application,
     private val repository: StudyRepository
 ) : AndroidViewModel(application) {
+    companion object {
+        private const val INSIGHTS_LOOKBACK_DAYS = 60
+        private val INSIGHTS_SUBJECT_ORDER = listOf("Physics", "Chemistry", "Maths", "Biology", "General", "Other")
+    }
 
     // --- NAVIGATION TABS ---
     // Tab values: "targets", "timer", "backlog", "dpp", "history", "insights"
@@ -276,7 +280,7 @@ class StudyViewModel(
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val insightsHeatmapDays: StateFlow<List<DailyStudyDuration>> = allSessions
-        .map { sessions -> buildHeatmapDays(sessions, lookbackDays = 60) }
+        .map { sessions -> buildHeatmapDays(sessions, lookbackDays = INSIGHTS_LOOKBACK_DAYS) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     val insightsSubjectDistribution: StateFlow<List<SubjectDuration>> = allSessions
@@ -1008,13 +1012,12 @@ class StudyViewModel(
     }
 
     private fun buildSubjectDistribution(sessions: List<StudySession>): List<SubjectDuration> {
-        val preferredOrder = listOf("Physics", "Chemistry", "Maths", "Biology", "General", "Other")
         val grouped = sessions.groupBy { normalizeSubjectForInsights(it.subject) }
             .mapValues { (_, items) -> items.sumOf { it.durationSeconds } }
             .toMutableMap()
 
         return buildList {
-            preferredOrder.forEach { subject ->
+            INSIGHTS_SUBJECT_ORDER.forEach { subject ->
                 val total = grouped.remove(subject) ?: 0
                 if (total > 0) {
                     add(SubjectDuration(subject = subject, totalSeconds = total))

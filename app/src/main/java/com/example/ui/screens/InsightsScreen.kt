@@ -40,13 +40,23 @@ import com.example.ui.theme.ColorPhysics
 import com.example.ui.theme.CosmicAccentCheck
 import com.example.ui.theme.CosmicSurfaceVariant
 
+// 60-day range displayed as a compact 10x6 contribution-style grid.
 private const val HEATMAP_COLUMNS = 10
+private const val MIN_SUBJECT_SECONDS = 1
+private const val LIGHT_STUDY_HOURS = 2f
+private const val MODERATE_STUDY_HOURS = 4f
+private const val STRONG_STUDY_HOURS = 6f
+private const val LIGHT_ALPHA = 0.28f
+private const val MODERATE_ALPHA = 0.48f
+private const val STRONG_ALPHA = 0.72f
+private const val PEAK_ALPHA = 0.96f
 
 @Composable
 fun InsightsScreen(viewModel: StudyViewModel) {
     val heatmapDays by viewModel.insightsHeatmapDays.collectAsState()
     val subjectDistribution by viewModel.insightsSubjectDistribution.collectAsState()
-    val maxSubjectSeconds = subjectDistribution.maxOfOrNull { it.totalSeconds }?.coerceAtLeast(1) ?: 1
+    val maxSubjectSeconds = subjectDistribution.maxOfOrNull { it.totalSeconds }?.coerceAtLeast(MIN_SUBJECT_SECONDS)
+        ?: MIN_SUBJECT_SECONDS
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -182,10 +192,10 @@ private fun heatmapColor(totalSeconds: Int): Color {
     if (totalSeconds <= 0) return CosmicSurfaceVariant
     val hours = totalSeconds / 3600f
     val alpha = when {
-        hours < 2f -> 0.28f
-        hours < 4f -> 0.48f
-        hours < 6f -> 0.72f
-        else -> 0.96f
+        hours < LIGHT_STUDY_HOURS -> LIGHT_ALPHA
+        hours < MODERATE_STUDY_HOURS -> MODERATE_ALPHA
+        hours < STRONG_STUDY_HOURS -> STRONG_ALPHA
+        else -> PEAK_ALPHA
     }
     return CosmicAccentCheck.copy(alpha = alpha)
 }
