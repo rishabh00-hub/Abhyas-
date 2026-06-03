@@ -960,12 +960,28 @@ class StudyViewModel(
         return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply { isLenient = false }
     }
 
+    private fun extractSessionDateKey(startTime: String): String {
+        if (startTime.isBlank()) return ""
+        return try {
+            val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault()).apply { isLenient = false }
+            val parsed = parser.parse(startTime)
+            if (parsed != null) currentDateFormatter().format(parsed) else startTime.take(10)
+        } catch (_: Exception) {
+            startTime.take(10)
+        }
+    }
+
+    private fun normalizeSubjectForInsights(subject: String): String {
+        val normalized = subject.trim()
+        return if (normalized.isEmpty()) "Other" else normalized
+    }
+
     private fun buildHeatmapDays(
         sessions: List<StudySession>,
         lookbackDays: Int
     ): List<DailyStudyDuration> {
         val formatter = currentDateFormatter()
-        val groupedSecondsByDate = sessions.groupBy { it.startTime.take(10) }
+        val groupedSecondsByDate = sessions.groupBy { extractSessionDateKey(it.startTime) }
             .mapValues { (_, daySessions) -> daySessions.sumOf { it.durationSeconds } }
 
         val calendar = Calendar.getInstance().apply {
@@ -993,7 +1009,7 @@ class StudyViewModel(
 
     private fun buildSubjectDistribution(sessions: List<StudySession>): List<SubjectDuration> {
         val preferredOrder = listOf("Physics", "Chemistry", "Maths", "Biology", "General", "Other")
-        val grouped = sessions.groupBy { it.subject.ifBlank { "Other" } }
+        val grouped = sessions.groupBy { normalizeSubjectForInsights(it.subject) }
             .mapValues { (_, items) -> items.sumOf { it.durationSeconds } }
             .toMutableMap()
 

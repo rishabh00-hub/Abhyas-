@@ -40,6 +40,8 @@ import com.example.ui.theme.ColorPhysics
 import com.example.ui.theme.CosmicAccentCheck
 import com.example.ui.theme.CosmicSurfaceVariant
 
+private const val HEATMAP_COLUMNS = 10
+
 @Composable
 fun InsightsScreen(viewModel: StudyViewModel) {
     val heatmapDays by viewModel.insightsHeatmapDays.collectAsState()
@@ -83,7 +85,7 @@ fun InsightsScreen(viewModel: StudyViewModel) {
                         fontWeight = FontWeight.Bold,
                         color = MaterialTheme.colorScheme.onSurface
                     )
-                    heatmapDays.chunked(10).forEach { rowDays ->
+                    heatmapDays.chunked(HEATMAP_COLUMNS).forEach { rowDays ->
                         Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
                             rowDays.forEach { day ->
                                 Box(
