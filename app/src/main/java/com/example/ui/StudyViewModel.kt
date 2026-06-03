@@ -146,12 +146,12 @@ class StudyViewModel(
     fun importDatabaseFromJson(context: Context, uri: Uri) {
         viewModelScope.launch(Dispatchers.IO) {
             try {
-                val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
+                val jsonString = context.contentResolver.openInputStream(uri)?.bufferedReader().use { it?.readText() }
                     ?: throw IllegalStateException("Unable to open input stream")
-                val backupData = gson.fromJson(json, BackupData::class.java)
+                val backupData = gson.fromJson(jsonString, BackupData::class.java)
                     ?: throw IllegalStateException("Failed to parse backup file")
 
-                repository.restoreFromBackup(backupData)
+                repository.restoreData(backupData)
 
                 withContext(Dispatchers.Main) {
                     Toast.makeText(context, "Data backup restored successfully", Toast.LENGTH_SHORT).show()
@@ -159,7 +159,7 @@ class StudyViewModel(
             } catch (e: Exception) {
                 Log.e("BackupImport", "Failed to import backup", e)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Backup restore failed. Check the backup file and try again.", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, e.localizedMessage, Toast.LENGTH_LONG).show()
                 }
             }
         }

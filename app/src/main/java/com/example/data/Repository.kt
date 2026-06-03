@@ -1,5 +1,6 @@
 package com.example.data
 
+import androidx.room.Transaction
 import androidx.room.withTransaction
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.map
@@ -78,10 +79,20 @@ class StudyRepository(private val db: AppDatabase) {
         }
     }
 
-    suspend fun restoreFromBackup(data: BackupData) {
+    @Transaction
+    suspend fun restoreData(backupData: BackupData) {
         db.withTransaction {
-            clearAllTablesInternal()
-            insertAllDataInternal(data)
+            db.targetDao().clearTargets()
+            db.backlogDao().clearBacklogs()
+            db.sessionDao().clearSessions()
+            db.dppDao().clearDPPLogs()
+            db.aspirationDao().clearAspirations()
+
+            if (backupData.targets.isNotEmpty()) db.targetDao().insertTargets(backupData.targets)
+            if (backupData.backlogs.isNotEmpty()) db.backlogDao().insertBacklogs(backupData.backlogs)
+            if (backupData.sessions.isNotEmpty()) db.sessionDao().insertSessions(backupData.sessions)
+            if (backupData.dpps.isNotEmpty()) db.dppDao().insertDPPLogs(backupData.dpps)
+            if (backupData.aspirations.isNotEmpty()) db.aspirationDao().insertAspirations(backupData.aspirations)
         }
     }
 
