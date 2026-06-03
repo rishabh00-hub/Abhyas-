@@ -30,6 +30,7 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
+import java.time.OffsetDateTime
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -967,9 +968,7 @@ class StudyViewModel(
     private fun extractSessionDateKey(startTime: String): String {
         if (startTime.isBlank()) return ""
         return try {
-            val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault()).apply { isLenient = false }
-            val parsed = parser.parse(startTime)
-            if (parsed != null) currentDateFormatter().format(parsed) else startTime.take(10)
+            OffsetDateTime.parse(startTime).toLocalDate().toString()
         } catch (_: Exception) {
             startTime.take(10)
         }

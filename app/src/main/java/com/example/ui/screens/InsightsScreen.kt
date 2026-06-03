@@ -42,7 +42,6 @@ import com.example.ui.theme.CosmicSurfaceVariant
 
 // 60-day range displayed as a compact 10x6 contribution-style grid.
 private const val HEATMAP_COLUMNS = 10
-private const val MIN_SUBJECT_SECONDS = 1
 private const val LIGHT_STUDY_HOURS = 2f
 private const val MODERATE_STUDY_HOURS = 4f
 private const val STRONG_STUDY_HOURS = 6f
@@ -55,8 +54,7 @@ private const val PEAK_ALPHA = 0.96f
 fun InsightsScreen(viewModel: StudyViewModel) {
     val heatmapDays by viewModel.insightsHeatmapDays.collectAsState()
     val subjectDistribution by viewModel.insightsSubjectDistribution.collectAsState()
-    val maxSubjectSeconds = subjectDistribution.maxOfOrNull { it.totalSeconds }?.coerceAtLeast(MIN_SUBJECT_SECONDS)
-        ?: MIN_SUBJECT_SECONDS
+    val maxSubjectSeconds = subjectDistribution.maxOfOrNull { it.totalSeconds } ?: 0
 
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
@@ -152,7 +150,11 @@ fun InsightsScreen(viewModel: StudyViewModel) {
                         )
                     } else {
                         subjectDistribution.forEach { entry ->
-                            val progress = entry.totalSeconds.toFloat() / maxSubjectSeconds.toFloat()
+                            val progress = if (maxSubjectSeconds > 0) {
+                                entry.totalSeconds.toFloat() / maxSubjectSeconds.toFloat()
+                            } else {
+                                0f
+                            }
                             Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
                                 Row(
                                     modifier = Modifier.fillMaxWidth(),
