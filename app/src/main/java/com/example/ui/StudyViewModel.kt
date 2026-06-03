@@ -44,6 +44,7 @@ class StudyViewModel(
     application: Application,
     private val repository: StudyRepository
 ) : AndroidViewModel(application) {
+    private val gson = Gson()
 
     // --- NAVIGATION TABS ---
     // Tab values: "targets", "timer", "backlog", "dpp", "history"
@@ -125,7 +126,7 @@ class StudyViewModel(
                     dpps = repository.allDPPLogs.first(),
                     aspirations = repository.allAspirations.first()
                 )
-                val json = Gson().toJson(backupData)
+                val json = gson.toJson(backupData)
                 context.contentResolver.openOutputStream(uri)?.bufferedWriter()?.use { writer ->
                     writer.write(json)
                 } ?: throw IllegalStateException("Unable to open output stream")
@@ -147,8 +148,8 @@ class StudyViewModel(
             try {
                 val json = context.contentResolver.openInputStream(uri)?.bufferedReader()?.use { it.readText() }
                     ?: throw IllegalStateException("Unable to open input stream")
-                val backupData = Gson().fromJson(json, BackupData::class.java)
-                    ?: throw IllegalStateException("Invalid backup file")
+                val backupData = gson.fromJson(json, BackupData::class.java)
+                    ?: throw IllegalStateException("Failed to parse backup file")
 
                 repository.restoreFromBackup(backupData)
 
