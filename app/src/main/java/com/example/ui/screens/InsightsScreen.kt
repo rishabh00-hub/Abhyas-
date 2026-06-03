@@ -214,5 +214,5 @@ private fun subjectInsightColor(subject: String): Color = when (subject) {
 private fun formatHours(totalSeconds: Int): String {
     val hours = totalSeconds / 3600
     val minutes = (totalSeconds % 3600) / 60
-    return "${hours}h ${minutes}m"
+    return if (hours > 0) "${hours}h ${minutes}m" else "${minutes}m"
 }
