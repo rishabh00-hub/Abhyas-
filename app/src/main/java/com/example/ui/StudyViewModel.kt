@@ -30,7 +30,6 @@ import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
-import java.time.OffsetDateTime
 import java.util.Calendar
 import java.util.Date
 import java.util.Locale
@@ -965,12 +964,18 @@ class StudyViewModel(
         return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply { isLenient = false }
     }
 
-    private fun extractSessionDateKey(startTime: String): String {
+    private fun extractSessionDateKey(
+        startTime: String,
+        parser: SimpleDateFormat,
+        formatter: SimpleDateFormat
+    ): String {
         if (startTime.isBlank()) return ""
         return try {
-            OffsetDateTime.parse(startTime).toLocalDate().toString()
+            val parsed = parser.parse(startTime)
+            if (parsed != null) formatter.format(parsed) else ""
         } catch (_: Exception) {
-            startTime.take(10)
+            val fallback = startTime.take(10)
+            if ("\\d{4}-\\d{2}-\\d{2}".toRegex().matches(fallback)) fallback else ""
         }
     }
 
@@ -983,8 +988,9 @@ class StudyViewModel(
         sessions: List<StudySession>,
         lookbackDays: Int
     ): List<DailyStudyDuration> {
+        val parser = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX", Locale.getDefault()).apply { isLenient = false }
         val formatter = currentDateFormatter()
-        val groupedSecondsByDate = sessions.groupBy { extractSessionDateKey(it.startTime) }
+        val groupedSecondsByDate = sessions.groupBy { extractSessionDateKey(it.startTime, parser, formatter) }
             .mapValues { (_, daySessions) -> daySessions.sumOf { it.durationSeconds } }
 
         val calendar = Calendar.getInstance().apply {
