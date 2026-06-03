@@ -68,38 +68,37 @@ class StudyRepository(private val db: AppDatabase) {
 
     suspend fun clearAllTables() {
         db.withTransaction {
-            db.sessionDao().clearSessions()
-            db.targetDao().clearTargets()
-            db.backlogDao().clearBacklogs()
-            db.dppDao().clearDPPLogs()
-            db.aspirationDao().clearAspirations()
+            clearAllTablesInternal()
         }
     }
 
     suspend fun insertAllData(data: BackupData) {
         db.withTransaction {
-            if (data.targets.isNotEmpty()) db.targetDao().insertTargets(data.targets)
-            if (data.backlogs.isNotEmpty()) db.backlogDao().insertBacklogs(data.backlogs)
-            if (data.sessions.isNotEmpty()) db.sessionDao().insertSessions(data.sessions)
-            if (data.dpps.isNotEmpty()) db.dppDao().insertDPPLogs(data.dpps)
-            if (data.aspirations.isNotEmpty()) db.aspirationDao().insertAspirations(data.aspirations)
+            insertAllDataInternal(data)
         }
     }
 
     suspend fun restoreFromBackup(data: BackupData) {
         db.withTransaction {
-            db.sessionDao().clearSessions()
-            db.targetDao().clearTargets()
-            db.backlogDao().clearBacklogs()
-            db.dppDao().clearDPPLogs()
-            db.aspirationDao().clearAspirations()
-
-            if (data.targets.isNotEmpty()) db.targetDao().insertTargets(data.targets)
-            if (data.backlogs.isNotEmpty()) db.backlogDao().insertBacklogs(data.backlogs)
-            if (data.sessions.isNotEmpty()) db.sessionDao().insertSessions(data.sessions)
-            if (data.dpps.isNotEmpty()) db.dppDao().insertDPPLogs(data.dpps)
-            if (data.aspirations.isNotEmpty()) db.aspirationDao().insertAspirations(data.aspirations)
+            clearAllTablesInternal()
+            insertAllDataInternal(data)
         }
+    }
+
+    private suspend fun clearAllTablesInternal() {
+        db.sessionDao().clearSessions()
+        db.targetDao().clearTargets()
+        db.backlogDao().clearBacklogs()
+        db.dppDao().clearDPPLogs()
+        db.aspirationDao().clearAspirations()
+    }
+
+    private suspend fun insertAllDataInternal(data: BackupData) {
+        if (data.targets.isNotEmpty()) db.targetDao().insertTargets(data.targets)
+        if (data.backlogs.isNotEmpty()) db.backlogDao().insertBacklogs(data.backlogs)
+        if (data.sessions.isNotEmpty()) db.sessionDao().insertSessions(data.sessions)
+        if (data.dpps.isNotEmpty()) db.dppDao().insertDPPLogs(data.dpps)
+        if (data.aspirations.isNotEmpty()) db.aspirationDao().insertAspirations(data.aspirations)
     }
 
     private suspend fun migrateExpiredTargets(targets: List<DailyTarget>): List<DailyTarget> {

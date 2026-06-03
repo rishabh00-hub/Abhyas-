@@ -134,8 +134,9 @@ class StudyViewModel(
                     Toast.makeText(context, "Data backup exported successfully", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
+                Log.e("BackupExport", "Failed to export backup", e)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Backup export failed: ${e.message ?: "Unknown error"}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "Backup export failed. Please try again.", Toast.LENGTH_LONG).show()
                 }
             }
         }
@@ -155,8 +156,9 @@ class StudyViewModel(
                     Toast.makeText(context, "Data backup restored successfully", Toast.LENGTH_SHORT).show()
                 }
             } catch (e: Exception) {
+                Log.e("BackupImport", "Failed to import backup", e)
                 withContext(Dispatchers.Main) {
-                    Toast.makeText(context, "Backup restore failed: ${e.message ?: "Unknown error"}", Toast.LENGTH_LONG).show()
+                    Toast.makeText(context, "Backup restore failed. Check the backup file and try again.", Toast.LENGTH_LONG).show()
                 }
             }
         }
