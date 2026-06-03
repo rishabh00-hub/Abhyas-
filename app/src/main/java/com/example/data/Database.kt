@@ -26,6 +26,9 @@ interface TargetDao {
     suspend fun insertTarget(target: DailyTarget)
 
     @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertTargets(targets: List<DailyTarget>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBacklogForMigration(item: BacklogItem)
 
     @Update
@@ -33,6 +36,9 @@ interface TargetDao {
 
     @Query("DELETE FROM daily_targets WHERE id = :id")
     suspend fun deleteTargetById(id: String)
+
+    @Query("DELETE FROM daily_targets")
+    suspend fun clearTargets()
 
     @Query("UPDATE daily_targets SET durationLogged = durationLogged + :seconds WHERE id = :id")
     suspend fun incrementLoggedDuration(id: String, seconds: Int)
@@ -55,11 +61,17 @@ interface BacklogDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertBacklog(item: BacklogItem)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertBacklogs(items: List<BacklogItem>)
+
     @Update
     suspend fun updateBacklog(item: BacklogItem)
 
     @Query("DELETE FROM backlog_items WHERE id = :id")
     suspend fun deleteBacklogById(id: String)
+
+    @Query("DELETE FROM backlog_items")
+    suspend fun clearBacklogs()
 
     @Query("UPDATE backlog_items SET status = :status WHERE id = :id")
     suspend fun updateBacklogStatus(id: String, status: String)
@@ -82,8 +94,14 @@ interface DPPDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertDPPLog(log: DPPHistoryLog)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertDPPLogs(logs: List<DPPHistoryLog>)
+
     @Query("DELETE FROM dpp_history_logs WHERE id = :id")
     suspend fun deleteDPPLogById(id: String)
+
+    @Query("DELETE FROM dpp_history_logs")
+    suspend fun clearDPPLogs()
 }
 
 @Dao
@@ -94,11 +112,17 @@ interface SessionDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertSession(session: StudySession)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSessions(sessions: List<StudySession>)
+
     @Query("DELETE FROM study_sessions WHERE id = :id")
     suspend fun deleteSessionById(id: String)
 
     @Query("DELETE FROM study_sessions WHERE associatedTargetId = :targetId")
     suspend fun deleteSessionsByTargetId(targetId: String)
+
+    @Query("DELETE FROM study_sessions")
+    suspend fun clearSessions()
 }
 
 @Dao
@@ -109,11 +133,17 @@ interface AspirationDao {
     @Insert(onConflict = OnConflictStrategy.REPLACE)
     suspend fun insertAspiration(aspiration: DailyAspiration)
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertAspirations(aspirations: List<DailyAspiration>)
+
     @Update
     suspend fun updateAspiration(aspiration: DailyAspiration)
 
     @Query("DELETE FROM daily_aspirations WHERE id = :id")
     suspend fun deleteAspirationById(id: String)
+
+    @Query("DELETE FROM daily_aspirations")
+    suspend fun clearAspirations()
 }
 
 @Database(
