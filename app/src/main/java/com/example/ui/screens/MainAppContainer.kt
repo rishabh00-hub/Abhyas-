@@ -104,6 +104,7 @@ fun MainAppContainer(viewModel: StudyViewModel) {
                             "backlog" -> BacklogScreen(viewModel)
                             "dpp" -> DPPScreen(viewModel)
                             "history" -> HistoryScreen(viewModel)
+                            "insights" -> InsightsScreen(viewModel)
                             else -> TargetsScreen(viewModel)
                         }
                     }
@@ -338,7 +339,8 @@ fun FloatingBottomBar(
                     NavigationItem("timer", "Focus", Icons.Default.Timer, Icons.Outlined.Timer),
                     NavigationItem("backlog", "Debt", Icons.Default.Warning, Icons.Outlined.Warning),
                     NavigationItem("dpp", "DPPs", Icons.Default.Assessment, Icons.Outlined.Assessment),
-                    NavigationItem("history", "History", Icons.Default.History, Icons.Outlined.History)
+                    NavigationItem("history", "History", Icons.Default.History, Icons.Outlined.History),
+                    NavigationItem("insights", "Insights", Icons.Default.Insights, Icons.Outlined.Insights)
                 ).forEach { navItem ->
                     val selected = activeTab == navItem.id
 
