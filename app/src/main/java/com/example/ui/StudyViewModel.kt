@@ -26,6 +26,7 @@ import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.first
+import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -40,7 +41,7 @@ class StudyViewModel(
 ) : AndroidViewModel(application) {
 
     // --- NAVIGATION TABS ---
-    // Tab values: "targets", "timer", "backlog", "dpp", "history"
+    // Tab values: "targets", "timer", "backlog", "dpp", "history", "insights"
     var activeTab by mutableStateOf("targets")
         private set
 
@@ -272,6 +273,14 @@ class StudyViewModel(
 
     // --- SESSIONS STATE ---
     val allSessions: StateFlow<List<StudySession>> = repository.allSessions
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val insightsHeatmapDays: StateFlow<List<DailyStudyDuration>> = allSessions
+        .map { sessions -> buildHeatmapDays(sessions, lookbackDays = 60) }
+        .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
+
+    val insightsSubjectDistribution: StateFlow<List<SubjectDuration>> = allSessions
+        .map { sessions -> buildSubjectDistribution(sessions) }
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
     // History log Filters
@@ -950,6 +959,58 @@ class StudyViewModel(
     private fun currentDateFormatter(): SimpleDateFormat {
         return SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).apply { isLenient = false }
     }
+
+    private fun buildHeatmapDays(
+        sessions: List<StudySession>,
+        lookbackDays: Int
+    ): List<DailyStudyDuration> {
+        val formatter = currentDateFormatter()
+        val groupedSecondsByDate = sessions.groupBy { it.startTime.take(10) }
+            .mapValues { (_, daySessions) -> daySessions.sumOf { it.durationSeconds } }
+
+        val calendar = Calendar.getInstance().apply {
+            set(Calendar.HOUR_OF_DAY, 0)
+            set(Calendar.MINUTE, 0)
+            set(Calendar.SECOND, 0)
+            set(Calendar.MILLISECOND, 0)
+            add(Calendar.DAY_OF_YEAR, -(lookbackDays - 1))
+        }
+
+        return buildList {
+            repeat(lookbackDays) {
+                val dateKey = formatter.format(calendar.time)
+                val totalSeconds = groupedSecondsByDate[dateKey] ?: 0
+                add(
+                    DailyStudyDuration(
+                        date = dateKey,
+                        totalSeconds = totalSeconds
+                    )
+                )
+                calendar.add(Calendar.DAY_OF_YEAR, 1)
+            }
+        }
+    }
+
+    private fun buildSubjectDistribution(sessions: List<StudySession>): List<SubjectDuration> {
+        val preferredOrder = listOf("Physics", "Chemistry", "Maths", "Biology", "General", "Other")
+        val grouped = sessions.groupBy { it.subject.ifBlank { "Other" } }
+            .mapValues { (_, items) -> items.sumOf { it.durationSeconds } }
+            .toMutableMap()
+
+        return buildList {
+            preferredOrder.forEach { subject ->
+                val total = grouped.remove(subject) ?: 0
+                if (total > 0) {
+                    add(SubjectDuration(subject = subject, totalSeconds = total))
+                }
+            }
+            grouped.entries.sortedByDescending { it.value }.forEach { (subject, total) ->
+                if (total > 0) {
+                    add(SubjectDuration(subject = subject, totalSeconds = total))
+                }
+            }
+        }
+    }
 }
 
 class StudyViewModelFactory(
@@ -1004,4 +1065,14 @@ private data class NumberInfo(
     val number: Int,
     val suffix: String,
     val width: Int
+)
+
+data class DailyStudyDuration(
+    val date: String,
+    val totalSeconds: Int
+)
+
+data class SubjectDuration(
+    val subject: String,
+    val totalSeconds: Int
 )
